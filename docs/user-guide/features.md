@@ -153,11 +153,11 @@ if button_devices:
         device.on((0, 255, 0))  # Green when not pressed
 ```
 
-## Asynchronous Programming
+## Task Management
 
-### Built-in Task Management
+### Automatic Environment Detection
 
-Every Light instance includes async task management:
+Every Light instance includes task management that automatically adapts to your environment:
 
 ```python
 import asyncio
@@ -166,26 +166,78 @@ from busylight_core import Light, NoLightsFoundError
 try:
     light = Light.first_light()
     
-    # Define a simple async task
-    async def blink_task():
-        for _ in range(5):
-            light.on((255, 0, 0))
-            await asyncio.sleep(0.5)
-            light.off()
-            await asyncio.sleep(0.5)
+    # Define a task function (sync or async - both work!)
+    def blink_sync():
+        """Synchronous blink function"""
+        light.on((255, 0, 0))
+        # TaskableMixin handles the periodic execution
     
-    # Add the task to the light's task manager
-    task = light.add_task("blink", blink_task)
-    print(f"Started blink task: {task}")
+    async def blink_async():
+        """Asynchronous blink function"""
+        light.on((0, 255, 0))
+        await asyncio.sleep(0.1)  # Can use async operations
+    
+    # Add periodic tasks - environment automatically detected
+    light.add_task("sync_blink", blink_sync, interval=1.0)     # Every 1 second
+    light.add_task("async_blink", blink_async, interval=2.0)   # Every 2 seconds
+    
+    # Works in both asyncio and non-asyncio contexts!
+    # - Asyncio context: Uses asyncio.Task
+    # - Non-asyncio context: Uses threading.Timer
     
     # Cancel specific task
-    light.cancel_task("blink")
+    light.cancel_task("sync_blink")
     
     # Cancel all tasks
     light.cancel_tasks()
     
 except NoLightsFoundError:
     print("No lights found")
+```
+
+### Asyncio Context Example
+
+```python
+import asyncio
+from busylight_core import Light
+
+async def main():
+    light = Light.first_light()
+    
+    # In asyncio context: automatically uses asyncio.Task
+    async def fade_task():
+        for brightness in range(0, 256, 16):
+            light.on((brightness, 0, 0))
+            await asyncio.sleep(0.1)
+    
+    light.add_task("fade", fade_task, interval=3.0)  # Repeat every 3 seconds
+    await asyncio.sleep(10)  # Let it run for 10 seconds
+    light.cancel_tasks()
+
+# Run in asyncio context
+asyncio.run(main())
+```
+
+### Non-Asyncio Context Example
+
+```python
+import time
+from busylight_core import Light
+
+def main():
+    light = Light.first_light()
+    
+    # In non-asyncio context: automatically uses threading.Timer
+    def pulse_task():
+        light.on((0, 128, 255))  # Blue pulse
+        # No sleep needed - TaskableMixin handles timing
+    
+    light.add_task("pulse", pulse_task, interval=0.5)  # Pulse every 0.5 seconds
+    time.sleep(5)  # Let it run for 5 seconds
+    light.cancel_tasks()
+
+# Run in regular Python context
+main()
 ```
 
 ## Error Handling
