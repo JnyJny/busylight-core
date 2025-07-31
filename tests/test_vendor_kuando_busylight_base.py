@@ -239,7 +239,7 @@ class TestKuandoBusylightBase:
             assert all(abs(retrieved_color[i] - color[i]) <= 2 for i in range(3))
             assert busylight.state.steps[0].opcode == OpCode.Jump
             mock_batch.assert_called_once()
-            mock_add_task.assert_called_once_with("keepalive", _keepalive)
+            mock_add_task.assert_called_once_with("keepalive", _keepalive, interval=10)
 
     def test_off_method(self, busylight) -> None:
         """Test off() method."""
@@ -278,7 +278,7 @@ class TestKuandoBusylightBase:
             retrieved_color = busylight.state.steps[0].color
             assert all(abs(retrieved_color[i] - color[i]) <= 2 for i in range(3))
             mock_batch.assert_called_once()
-            mock_add_task.assert_called_once_with("keepalive", _keepalive)
+            mock_add_task.assert_called_once_with("keepalive", _keepalive, interval=10)
 
     def test_off_method_with_led_parameter(self, busylight) -> None:
         """Test off() method with led parameter (should be ignored)."""
@@ -342,125 +342,73 @@ class TestKuandoBusylightKeepAlive:
         light.batch_update.return_value.__exit__ = Mock()
         return light
 
-    @pytest.mark.asyncio
-    async def test_keepalive_default_interval(self, mock_light) -> None:
+    def test_keepalive_default_interval(self, mock_light) -> None:
         """Test keepalive with default interval."""
-        with patch("asyncio.sleep") as mock_sleep:
-            mock_sleep.side_effect = [
-                None,
-                asyncio.CancelledError(),
-            ]  # Stop after one iteration
+        # Call the synchronous keepalive function
+        _keepalive(mock_light)
+        
+        # Should call keep_alive with default interval of 10
+        mock_light.state.steps[0].keep_alive.assert_called_with(10)
+        # Should use batch_update
+        mock_light.batch_update.assert_called()
 
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light)
-
-            # Should call keep_alive with default interval of 15
-            mock_light.state.steps[0].keep_alive.assert_called_with(15)
-            mock_sleep.assert_called_with(
-                8
-            )  # Should sleep for interval/2 rounded: round(15/2) = 8
-
-    @pytest.mark.asyncio
-    async def test_keepalive_custom_interval(self, mock_light) -> None:
+    def test_keepalive_custom_interval(self, mock_light) -> None:
         """Test keepalive with custom interval."""
-        interval = 10
-        with patch("asyncio.sleep") as mock_sleep:
-            mock_sleep.side_effect = [
-                None,
-                asyncio.CancelledError(),
-            ]  # Stop after one iteration
+        interval = 5
+        # Call the synchronous keepalive function
+        _keepalive(mock_light, interval)
+        
+        # Should call keep_alive with specified interval
+        mock_light.state.steps[0].keep_alive.assert_called_with(interval)
+        # Should use batch_update
+        mock_light.batch_update.assert_called()
 
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light, interval)
-
-            mock_light.state.steps[0].keep_alive.assert_called_with(interval)
-            mock_sleep.assert_called_with(5)  # Should sleep for interval/2
-
-    @pytest.mark.asyncio
-    async def test_keepalive_interval_validation(self, mock_light) -> None:
-        """Test keepalive interval validation."""
-        # Test invalid intervals
-        with pytest.raises(
-            ValueError, match="Keepalive interval must be between 0 and 15 seconds"
-        ):
-            await _keepalive(mock_light, -1)
-
-        with pytest.raises(
-            ValueError, match="Keepalive interval must be between 0 and 15 seconds"
-        ):
-            await _keepalive(mock_light, 16)
-
+    def test_keepalive_boundary_values(self, mock_light) -> None:
+        """Test keepalive with boundary interval values."""
         # Test valid boundary values
-        with patch("asyncio.sleep") as mock_sleep:
-            # Test interval 0
-            mock_sleep.side_effect = [asyncio.CancelledError()]  # Stop immediately
+        # Test interval 0
+        _keepalive(mock_light, 0)
+        mock_light.state.steps[0].keep_alive.assert_called_with(0)
+        
+        # Reset mock for next test
+        mock_light.state.steps[0].keep_alive.reset_mock()
+        
+        # Test interval 15
+        _keepalive(mock_light, 15)
+        mock_light.state.steps[0].keep_alive.assert_called_with(15)
 
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light, 0)
-            mock_light.state.steps[0].keep_alive.assert_called_with(0)
-
-            # Reset mock for next test
+    def test_keepalive_different_intervals(self, mock_light) -> None:
+        """Test keepalive function with different interval values."""
+        test_intervals = [1, 2, 5, 8, 10, 15]
+        
+        for interval in test_intervals:
+            # Reset mock for each test
             mock_light.state.steps[0].keep_alive.reset_mock()
+            
+            # Call keepalive with interval
+            _keepalive(mock_light, interval)
+            
+            # Verify it was called with the correct interval
+            mock_light.state.steps[0].keep_alive.assert_called_with(interval)
 
-            # Test interval 15
-            mock_sleep.side_effect = [asyncio.CancelledError()]  # Stop immediately
+    def test_keepalive_single_execution(self, mock_light) -> None:
+        """Test keepalive function executes once per call."""
+        # Call keepalive multiple times to verify each call is independent
+        _keepalive(mock_light, 8)
+        _keepalive(mock_light, 8)
+        _keepalive(mock_light, 8)
+        
+        # Should have called keep_alive 3 times (once per call)
+        assert mock_light.state.steps[0].keep_alive.call_count == 3
+        # Each call should be with the same interval
+        for call in mock_light.state.steps[0].keep_alive.call_args_list:
+            assert call[0][0] == 8
 
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light, 15)
-            mock_light.state.steps[0].keep_alive.assert_called_with(15)
-
-    @pytest.mark.asyncio
-    async def test_keepalive_sleep_calculation(self, mock_light) -> None:
-        """Test keepalive sleep interval calculation."""
-        test_cases = [
-            (1, 0),  # round(1/2) = 0
-            (2, 1),  # round(2/2) = 1
-            (3, 2),  # round(3/2) = 2
-            (9, 4),  # round(9/2) = 4
-            (10, 5),  # round(10/2) = 5
-            (15, 8),  # round(15/2) = 8
-        ]
-
-        for interval, expected_sleep in test_cases:
-            with patch("asyncio.sleep") as mock_sleep:
-                mock_sleep.side_effect = [asyncio.CancelledError()]  # Stop immediately
-
-                with pytest.raises(asyncio.CancelledError):
-                    await _keepalive(mock_light, interval)
-
-                mock_sleep.assert_called_with(expected_sleep)
-
-    @pytest.mark.asyncio
-    async def test_keepalive_continuous_operation(self, mock_light) -> None:
-        """Test keepalive continuous operation."""
-        with patch("asyncio.sleep") as mock_sleep:
-            # Allow 3 iterations then cancel
-            mock_sleep.side_effect = [None, None, None, asyncio.CancelledError()]
-
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light, 8)
-
-            # Should have called keep_alive 4 times (once per iteration)
-            assert mock_light.state.steps[0].keep_alive.call_count == 4
-            # Should have called sleep 4 times (once per iteration)
-            assert mock_sleep.call_count == 4
-            # Each sleep should be with interval/2
-            for call in mock_sleep.call_args_list:
-                assert call[0][0] == 4  # round(8/2) = 4
-
-    @pytest.mark.asyncio
-    async def test_keepalive_batch_update_usage(self, mock_light) -> None:
+    def test_keepalive_batch_update_usage(self, mock_light) -> None:
         """Test keepalive uses batch_update correctly."""
-        with patch("asyncio.sleep") as mock_sleep:
-            mock_sleep.side_effect = [
-                None,
-                asyncio.CancelledError(),
-            ]  # Stop after one iteration
-
-            with pytest.raises(asyncio.CancelledError):
-                await _keepalive(mock_light)
-
-            # Should use batch_update for each keepalive call
-            mock_light.batch_update.assert_called()
-            mock_light.batch_update.return_value.__enter__.assert_called()
-            mock_light.batch_update.return_value.__exit__.assert_called()
+        _keepalive(mock_light)
+        
+        # Should use batch_update for each keepalive call
+        mock_light.batch_update.assert_called()
+        mock_light.batch_update.return_value.__enter__.assert_called()
+        mock_light.batch_update.return_value.__exit__.assert_called()

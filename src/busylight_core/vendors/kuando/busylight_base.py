@@ -38,7 +38,7 @@ class BusylightBase(ColorableMixin, KuandoBase):
             self.state.steps[0].jump(self.color)
 
         # Environment automatically chooses asyncio or threading!
-        self.add_task("keepalive", _keepalive)
+        self.add_task("keepalive", _keepalive, interval=10)
 
     def off(self, led: int = 0) -> None:
         """Turn off the Busylight and stop keepalive.
