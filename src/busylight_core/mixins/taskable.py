@@ -2,8 +2,9 @@
 
 import asyncio
 import contextlib
+import threading
 import time
-from collections.abc import Awaitable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from enum import IntEnum
 from functools import cached_property
@@ -78,11 +79,26 @@ class TaskInfo:
         return None
 
 
-class TaskableMixin:
-    """Associate and manage asynchronous tasks.
+# Type aliases for task functions and instantiators
+TaskFunction = (
+    Callable[["TaskableMixin"], None]  # Sync function
+    | Callable[["TaskableMixin"], Awaitable[None]]  # Async function
+)
 
-    Provides enhanced task management with prioritization, error handling,
-    and task monitoring capabilities for Light instances.
+TaskInstantiator = Callable[
+    [str, TaskFunction, float | None], asyncio.Task | threading.Timer
+]
+
+
+class TaskableMixin:
+    """Associate and manage asynchronous and synchronous tasks.
+
+    Provides enhanced task management with automatic strategy selection
+    (asyncio vs threading), prioritization, error handling, and task
+    monitoring capabilities for Light instances.
+
+    The environment automatically determines whether to use asyncio tasks
+    or threading timers based on the presence of a running event loop.
     """
 
     @cached_property
@@ -97,9 +113,16 @@ class TaskableMixin:
         except RuntimeError:
             return asyncio.new_event_loop()
 
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        """Initialize TaskableMixin with task storage for both strategies."""
+        super().__init__(*args, **kwargs)
+        # Initialize task storage for both strategies
+        self._thread_tasks: dict[str, threading.Timer] = {}
+        self._task_lock = threading.Lock()
+
     @cached_property
     def tasks(self) -> dict[str, asyncio.Task]:
-        """Active tasks that are associated with this instance.
+        """Active asyncio tasks that are associated with this instance.
 
         Dictionary mapping task names to their corresponding asyncio.Task objects.
         """
@@ -114,66 +137,259 @@ class TaskableMixin:
         """
         return {}
 
+    @cached_property
+    def task_strategy(self) -> TaskInstantiator:
+        """Return the appropriate task instantiation function based on environment.
+
+        Automatically detects if we're in an asyncio context and returns the
+        corresponding task creation function. Both functions have identical
+        call signatures for transparent usage.
+
+        :return: Function to create tasks (asyncio or threading based)
+        """
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return self._create_thread_task
+        else:
+            return self._create_asyncio_task
+
+    def _create_asyncio_task(
+        self, name: str, func: TaskFunction, interval: float | None = None
+    ) -> asyncio.Task:
+        """Create asyncio-based task with unified signature."""
+        self._cleanup_completed_tasks()
+
+        # Get the running loop (we know it exists since task_strategy detected it)
+        loop = asyncio.get_running_loop()
+
+        if interval:
+            # Periodic asyncio task
+            task = loop.create_task(
+                self._periodic_asyncio_runner(func, interval), name=name
+            )
+        # One-shot asyncio task
+        elif asyncio.iscoroutinefunction(func):
+            task = loop.create_task(func(self), name=name)
+        else:
+            # Wrap sync function for asyncio
+            task = loop.create_task(self._sync_to_async_wrapper(func), name=name)
+
+        # Store task info
+        task_info = TaskInfo(
+            task=task,
+            priority=TaskPriority.NORMAL,  # Default priority
+            name=name,
+            created_at=time.time(),
+        )
+        self.task_info[name] = task_info
+        self.tasks[name] = task
+        task.add_done_callback(self._task_completion_callback)
+        return task
+
+    def _create_thread_task(
+        self, name: str, func: TaskFunction, interval: float | None = None
+    ) -> threading.Timer:
+        """Create threading-based task with unified signature."""
+        if func is None:
+            msg = f"Cannot create thread task '{name}' with None function"
+            raise TypeError(msg)
+
+        with self._task_lock:
+            if interval:
+                # Periodic threading task
+                timer = self._create_periodic_timer(name, func, interval)
+            else:
+                # One-shot threading task
+                if asyncio.iscoroutinefunction(func):
+                    # Can't run async function in thread - raise clear error
+                    msg = (
+                        f"Cannot run async function '{func.__name__}' in "
+                        f"threading context. Use a synchronous function or "
+                        f"run in asyncio context."
+                    )
+                    raise RuntimeError(msg)
+                timer = threading.Timer(0, lambda: func(self))
+
+            timer.daemon = True
+            self._thread_tasks[name] = timer
+            timer.start()
+
+            logger.debug(f"Started thread task '{name}' (interval={interval})")
+            return timer
+
+    async def _periodic_asyncio_runner(
+        self, func: TaskFunction, interval: float
+    ) -> None:
+        """Run function periodically in asyncio context."""
+        while True:
+            try:
+                if asyncio.iscoroutinefunction(func):
+                    await func(self)
+                else:
+                    func(self)  # Sync function in async context
+            except Exception as error:
+                logger.error(f"Periodic asyncio task error: {error}")
+                break
+            await asyncio.sleep(interval)
+
+    async def _sync_to_async_wrapper(self, func: Callable) -> None:
+        """Wrap synchronous function for asyncio execution."""
+        func(self)
+
+    def _create_periodic_timer(
+        self, name: str, func: TaskFunction, interval: float
+    ) -> threading.Timer:
+        """Create self-rescheduling timer for periodic execution."""
+
+        def periodic_wrapper() -> None:
+            # Pre-check for async function to avoid raising inside try block
+            if asyncio.iscoroutinefunction(func):
+                msg = f"Cannot run async function in threading context: {func.__name__}"
+                logger.error(f"Periodic thread task '{name}' error: {msg}")
+                with self._task_lock:
+                    self._thread_tasks.pop(name, None)
+                return
+
+            try:
+                # Execute the sync function
+                func(self)
+
+                # Reschedule if not cancelled
+                with self._task_lock:
+                    if name in self._thread_tasks:
+                        new_timer = threading.Timer(interval, periodic_wrapper)
+                        new_timer.daemon = True
+                        self._thread_tasks[name] = new_timer
+                        new_timer.start()
+
+            except Exception as error:
+                logger.error(f"Periodic thread task '{name}' error: {error}")
+                # Don't reschedule on error
+                with self._task_lock:
+                    self._thread_tasks.pop(name, None)
+
+        # Start with immediate execution (0 delay), then use interval for
+        # subsequent runs
+        return threading.Timer(0, periodic_wrapper)
+
     def add_task(
         self,
         name: str,
-        coroutine: Awaitable,
+        func: TaskFunction,
         priority: TaskPriority = TaskPriority.NORMAL,
         replace: bool = False,
-    ) -> asyncio.Task:
-        """Create a new task using coroutine as the body and stash it in the tasks dict.
+        interval: float | None = None,
+    ) -> asyncio.Task | threading.Timer:
+        """Create a task using environment-appropriate strategy.
 
-        Creates and manages an asyncio task with enhanced tracking and error handling.
+        The environment (asyncio vs non-asyncio) automatically determines whether
+        to use asyncio tasks or threading timers. Both strategies support the same
+        function signatures and periodic execution.
 
         :param name: Unique identifier for the task
-        :param coroutine: Awaitable function to run as task
-        :param priority: Task priority level for scheduling
+        :param func: Function to execute (sync or async)
+        :param priority: Task priority (used for asyncio tasks only)
         :param replace: Whether to replace existing task with same name
-        :return: The created or existing asyncio.Task
+        :param interval: For periodic tasks, repeat interval in seconds
+        :return: Created asyncio.Task or threading.Timer
         """
+        # Clean up existing task if replacing
+        if replace:
+            self.cancel_task(name)
+        elif self._task_exists(name):
+            return self._get_existing_task(name)
+
+        # Backward compatibility: handle coroutine functions that expect to be called
+        # with arguments in the old style (coroutine(self) instead of func(self))
+        if interval is None and asyncio.iscoroutinefunction(func):
+            # Old-style coroutine that should be called directly
+            return self._create_asyncio_task_legacy(name, func, priority)
+
+        # Use environment-determined strategy
+        return self.task_strategy(name, func, interval)
+
+    def _create_asyncio_task_legacy(
+        self, name: str, coroutine: TaskFunction, priority: TaskPriority
+    ) -> asyncio.Task:
+        """Create asyncio task using legacy coroutine calling convention."""
         self._cleanup_completed_tasks()
 
-        if not replace:
-            existing_task = self.tasks.get(name)
-            if existing_task:
-                return existing_task
-        else:
-            existing = self.task_info.get(name)
-            if existing:
-                existing.task.cancel()
-                del self.task_info[name]
-                del self.tasks[name]
+        # Use the event_loop property which may be mocked in tests
+        loop = self.event_loop
 
-        task = self.event_loop.create_task(coroutine(self), name=name)
+        # Old-style: call coroutine with self
+        task = loop.create_task(coroutine(self), name=name)
 
+        # Store task info
         task_info = TaskInfo(
             task=task, priority=priority, name=name, created_at=time.time()
         )
         self.task_info[name] = task_info
         self.tasks[name] = task
-
         task.add_done_callback(self._task_completion_callback)
         return task
 
-    def cancel_task(self, name: str) -> asyncio.Task | None:
-        """Cancel a task associated with name if it exists.
+    def _task_exists(self, name: str) -> bool:
+        """Check if task exists in either strategy."""
+        # Ensure _thread_tasks is initialized
+        if not hasattr(self, "_thread_tasks"):
+            self._thread_tasks = {}
+            self._task_lock = threading.Lock()
+        return name in self.tasks or name in self._thread_tasks
 
-        Removes the task from tracking and attempts to cancel it.
+    def _get_existing_task(self, name: str) -> asyncio.Task | threading.Timer:
+        """Get existing task from either strategy."""
+        # Ensure _thread_tasks is initialized
+        if not hasattr(self, "_thread_tasks"):
+            self._thread_tasks = {}
+            self._task_lock = threading.Lock()
+        return self.tasks.get(name) or self._thread_tasks.get(name)
+
+    def cancel_task(self, name: str) -> asyncio.Task | threading.Timer | None:
+        """Cancel task regardless of which strategy created it.
 
         :param name: Name of task to cancel
-        :return: The cancelled task or None if not found
+        :return: The cancelled task/timer or None if not found
         """
-        with contextlib.suppress(KeyError):
-            task = self.tasks[name]
-            del self.tasks[name]
-            if name in self.task_info:
-                del self.task_info[name]
+        # Try asyncio first
+        if name in self.tasks:
+            return self._cancel_asyncio_task(name)
 
-            with contextlib.suppress(AttributeError):
-                task.cancel()
-                return task
+        # Ensure _thread_tasks is initialized
+        if not hasattr(self, "_thread_tasks"):
+            self._thread_tasks = {}
+            self._task_lock = threading.Lock()
+
+        # Try threading
+        if name in self._thread_tasks:
+            return self._cancel_thread_task(name)
 
         return None
+
+    def _cancel_asyncio_task(self, name: str) -> asyncio.Task | None:
+        """Cancel asyncio task."""
+        task = self.tasks.pop(name, None)
+        if task:
+            self.task_info.pop(name, None)
+            try:
+                task.cancel()
+            except AttributeError:
+                logger.debug(f"Task '{name}' does not support cancellation")
+                return None
+            else:
+                logger.debug(f"Cancelled asyncio task '{name}'")
+                return task
+        return task
+
+    def _cancel_thread_task(self, name: str) -> threading.Timer | None:
+        """Cancel threading task."""
+        with self._task_lock:
+            timer = self._thread_tasks.pop(name, None)
+            if timer:
+                timer.cancel()
+                logger.debug(f"Cancelled thread task '{name}'")
+            return timer
 
     def cancel_tasks(self, priority: TaskPriority | None = None) -> None:
         """Cancel all tasks or tasks of specific priority.
@@ -183,11 +399,23 @@ class TaskableMixin:
         :param priority: If specified, only cancel tasks of this priority level
         """
         if priority is None:
-            for task in self.tasks.values():
-                task.cancel()
-            self.tasks.clear()
-            self.task_info.clear()
-        else:
+            # Cancel all asyncio tasks (check if initialized)
+            if hasattr(self, "_tasks") or "tasks" in self.__dict__:
+                for task in self.tasks.values():
+                    task.cancel()
+                self.tasks.clear()
+
+            if hasattr(self, "_task_info") or "task_info" in self.__dict__:
+                self.task_info.clear()
+
+            # Cancel all threading tasks
+            if hasattr(self, "_thread_tasks"):
+                with self._task_lock:
+                    for timer in self._thread_tasks.values():
+                        timer.cancel()
+                    self._thread_tasks.clear()
+        # Priority-based cancellation for asyncio (existing)
+        elif hasattr(self, "_task_info") or "task_info" in self.__dict__:
             to_cancel = [
                 name
                 for name, task_info in self.task_info.items()
@@ -196,6 +424,9 @@ class TaskableMixin:
             for name in to_cancel:
                 self.task_info[name].task.cancel()
             self._cleanup_completed_tasks()
+
+            # Note: Threading tasks don't track priority yet
+            # Could enhance to track priority in _thread_tasks if needed
 
     def get_task_status(self, name: str) -> dict[str, Any] | None:
         """Get detailed status information for a task.
@@ -241,6 +472,8 @@ class TaskableMixin:
         :return: List of task names that are currently running
         """
         active = []
+
+        # Check asyncio tasks
         for name, task_info in self.task_info.items():
             if task_info.is_running:
                 active.append(name)
@@ -248,6 +481,12 @@ class TaskableMixin:
         for name, task in self.tasks.items():
             if name not in self.task_info and not task.done():
                 active.append(name)
+
+        # Check threading tasks
+        with self._task_lock:
+            for name, timer in self._thread_tasks.items():
+                if timer.is_alive():
+                    active.append(name)
 
         return sorted(active)
 
@@ -257,6 +496,7 @@ class TaskableMixin:
         Internal method to clean up task dictionaries by removing references
         to completed, cancelled, or failed tasks.
         """
+        # Clean up asyncio tasks
         completed = [
             name
             for name, task_info in self.task_info.items()
@@ -274,6 +514,16 @@ class TaskableMixin:
         for name in completed_tasks:
             del self.tasks[name]
 
+        # Clean up threading tasks
+        with self._task_lock:
+            completed_timers = [
+                name
+                for name, timer in self._thread_tasks.items()
+                if not timer.is_alive()
+            ]
+            for name in completed_timers:
+                del self._thread_tasks[name]
+
     def _task_completion_callback(self, task: asyncio.Task) -> None:
         """Handle task completion for error monitoring.
 
@@ -290,7 +540,6 @@ class TaskableMixin:
                     task_name = name
                     break
             else:
-                logger.debug("Task {task} not found.")
                 return
 
             if task.cancelled():
