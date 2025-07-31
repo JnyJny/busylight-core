@@ -163,8 +163,10 @@ class Hardware:
         return (self.vendor_id, self.product_id)
 
     def __post_init__(self) -> None:
-        self.vendor_id &= 0x0FFFF
-        self.product_id &= 0x0FFFF
+        if self.vendor_id:
+            self.vendor_id &= 0x0FFFF
+        if self.product_id:
+            self.product_id &= 0x0FFFF
 
     def __str__(self) -> str:
         return "{vid:04x}:{pid:04x} {man} {prod} {ser} {path}".format(
