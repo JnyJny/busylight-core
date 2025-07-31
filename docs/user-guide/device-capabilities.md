@@ -43,7 +43,7 @@ if blynclights:
 ```
 
 ### Kuando (2 devices)
-High-quality Nordic design with keepalive requirements.
+High-quality Nordic design status lights.
 
 | Device | LEDs | Flash | Audio | Special Features |
 |--------|------|-------|-------|------------------|
@@ -57,14 +57,13 @@ from busylight_core import KuandoLights, BusylightAlpha
 # Get all Kuando devices (any model)
 kuando_lights = KuandoLights.all_lights()
 for light in kuando_lights:
-    light.on((0, 255, 0))
-    light.keepalive()  # Required for Kuando devices
+    light.on((0, 255, 0))  # Green
 
 # Or get specific Alpha devices only
 alpha_lights = BusylightAlpha.all_lights()
 if alpha_lights:
     alpha = alpha_lights[0]
-    alpha.flash((255, 165, 0), speed="fast")
+    alpha.on((255, 165, 0))  # Orange
 ```
 
 ### Luxafor (5 devices)

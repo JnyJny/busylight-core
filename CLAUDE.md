@@ -14,6 +14,13 @@ Python library for controlling USB status lights from various vendors using a pl
 - **Vendors** (src/busylight_core/vendors/) - Device-specific implementations
 - **Mixins** - ColorableMixin, TaskableMixin for shared functionality
 
+### TaskableMixin
+Provides automatic task management with environment-driven strategy selection:
+- **Asyncio context**: Uses `asyncio.Task` for periodic execution
+- **Non-asyncio context**: Uses `threading.Timer` for periodic execution
+- **Automatic detection**: No user configuration required
+- **Backward compatibility**: Maintains existing coroutine-based API
+
 ### Adding Devices
 1. Create vendor package in vendors/ if needed  
 2. Implement Light subclass

@@ -86,7 +86,6 @@ for light in luxafor_lights:
 try:
     kuando_light = KuandoLights.first_light()
     kuando_light.on((0, 0, 255))  # Blue
-    kuando_light.keepalive()  # Required for Kuando devices
 except NoLightsFoundError:
     print("No Kuando devices found")
 ```
