@@ -1,6 +1,5 @@
 """Tests for Kuando BusylightBase shared functionality."""
 
-import asyncio
 from unittest.mock import Mock, patch
 
 import pytest
@@ -346,7 +345,7 @@ class TestKuandoBusylightKeepAlive:
         """Test keepalive with default interval."""
         # Call the synchronous keepalive function
         _keepalive(mock_light)
-        
+
         # Should call keep_alive with default interval of 10
         mock_light.state.steps[0].keep_alive.assert_called_with(10)
         # Should use batch_update
@@ -357,7 +356,7 @@ class TestKuandoBusylightKeepAlive:
         interval = 5
         # Call the synchronous keepalive function
         _keepalive(mock_light, interval)
-        
+
         # Should call keep_alive with specified interval
         mock_light.state.steps[0].keep_alive.assert_called_with(interval)
         # Should use batch_update
@@ -369,10 +368,10 @@ class TestKuandoBusylightKeepAlive:
         # Test interval 0
         _keepalive(mock_light, 0)
         mock_light.state.steps[0].keep_alive.assert_called_with(0)
-        
+
         # Reset mock for next test
         mock_light.state.steps[0].keep_alive.reset_mock()
-        
+
         # Test interval 15
         _keepalive(mock_light, 15)
         mock_light.state.steps[0].keep_alive.assert_called_with(15)
@@ -380,14 +379,14 @@ class TestKuandoBusylightKeepAlive:
     def test_keepalive_different_intervals(self, mock_light) -> None:
         """Test keepalive function with different interval values."""
         test_intervals = [1, 2, 5, 8, 10, 15]
-        
+
         for interval in test_intervals:
             # Reset mock for each test
             mock_light.state.steps[0].keep_alive.reset_mock()
-            
+
             # Call keepalive with interval
             _keepalive(mock_light, interval)
-            
+
             # Verify it was called with the correct interval
             mock_light.state.steps[0].keep_alive.assert_called_with(interval)
 
@@ -397,7 +396,7 @@ class TestKuandoBusylightKeepAlive:
         _keepalive(mock_light, 8)
         _keepalive(mock_light, 8)
         _keepalive(mock_light, 8)
-        
+
         # Should have called keep_alive 3 times (once per call)
         assert mock_light.state.steps[0].keep_alive.call_count == 3
         # Each call should be with the same interval
@@ -407,7 +406,7 @@ class TestKuandoBusylightKeepAlive:
     def test_keepalive_batch_update_usage(self, mock_light) -> None:
         """Test keepalive uses batch_update correctly."""
         _keepalive(mock_light)
-        
+
         # Should use batch_update for each keepalive call
         mock_light.batch_update.assert_called()
         mock_light.batch_update.return_value.__enter__.assert_called()
