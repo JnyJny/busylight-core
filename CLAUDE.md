@@ -22,11 +22,7 @@ Provides automatic task management with environment-driven strategy selection:
 - **Backward compatibility**: Maintains existing coroutine-based API
 
 ### Kuando Devices
-Kuando devices require periodic keepalive packets to prevent hardware timeout:
-- **Automatic keepalive**: Started when `light.on()` is called
-- **Environment adaptive**: Uses asyncio or threading based on context
-- **10-second interval**: Default keepalive frequency
-- **Transparent operation**: No user intervention required
+High-quality Nordic design status lights with automatic hardware management.
 
 ### Adding Devices
 1. Create vendor package in vendors/ if needed  

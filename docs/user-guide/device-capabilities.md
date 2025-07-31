@@ -43,12 +43,12 @@ if blynclights:
 ```
 
 ### Kuando (2 devices)
-High-quality Nordic design with automatic keepalive management.
+High-quality Nordic design status lights.
 
 | Device | LEDs | Flash | Audio | Special Features |
 |--------|------|-------|-------|------------------|
-| **Busylight Alpha** | 1 | ✓ | ✗ | Multiple USB IDs, auto keepalive |
-| **Busylight Omega** | 1 | ✓ | ✗ | Premium model, auto keepalive |
+| **Busylight Alpha** | 1 | ✓ | ✗ | Multiple USB IDs |
+| **Busylight Omega** | 1 | ✓ | ✗ | Premium model |
 
 **Usage Example:**
 ```python
@@ -57,22 +57,14 @@ from busylight_core import KuandoLights, BusylightAlpha
 # Get all Kuando devices (any model)
 kuando_lights = KuandoLights.all_lights()
 for light in kuando_lights:
-    light.on((0, 255, 0))  # Automatic keepalive started
-    # No manual keepalive needed - handled automatically!
+    light.on((0, 255, 0))  # Green
 
 # Or get specific Alpha devices only
 alpha_lights = BusylightAlpha.all_lights()
 if alpha_lights:
     alpha = alpha_lights[0]
-    alpha.on((255, 165, 0))  # Auto keepalive in any context (asyncio/threading)
-    # Keepalive packets sent every 10 seconds automatically
+    alpha.on((255, 165, 0))  # Orange
 ```
-
-**Keepalive Behavior:**
-- **Automatic**: Keepalive packets sent every 10 seconds when light is on
-- **Environment adaptive**: Uses asyncio.Task or threading.Timer based on context
-- **Transparent**: No user intervention required
-- **Hardware requirement**: Prevents device timeout and LED shutdown
 
 ### Luxafor (5 devices)
 Versatile devices with multi-LED support and button input.

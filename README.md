@@ -85,8 +85,7 @@ for light in luxafor_lights:
 # Get first Kuando device
 try:
     kuando_light = KuandoLights.first_light()
-    kuando_light.on((0, 0, 255))  # Blue with automatic keepalive
-    # Keepalive packets sent automatically every 10 seconds
+    kuando_light.on((0, 0, 255))  # Blue
 except NoLightsFoundError:
     print("No Kuando devices found")
 ```
