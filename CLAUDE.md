@@ -21,9 +21,6 @@ Provides automatic task management with environment-driven strategy selection:
 - **Automatic detection**: No user configuration required
 - **Backward compatibility**: Maintains existing coroutine-based API
 
-### Kuando Devices
-High-quality Nordic design status lights with automatic hardware management.
-
 ### Adding Devices
 1. Create vendor package in vendors/ if needed  
 2. Implement Light subclass
