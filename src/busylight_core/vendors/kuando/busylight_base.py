@@ -1,6 +1,5 @@
 """Kuando Busylight Base Implementation"""
 
-import asyncio
 from functools import cached_property
 
 from busylight_core.mixins import ColorableMixin
@@ -52,7 +51,7 @@ class BusylightBase(ColorableMixin, KuandoBase):
         self.cancel_task("keepalive")
 
 
-def _send_keepalive(light: BusylightBase, interval: int = 15) -> None:
+def _keepalive(light: BusylightBase, interval: int = 10) -> None:
     """Send keepalive packet - works in any context.
 
     This synchronous function can be called from either asyncio or
@@ -64,25 +63,3 @@ def _send_keepalive(light: BusylightBase, interval: int = 15) -> None:
     """
     with light.batch_update():
         light.state.steps[0].keep_alive(interval)
-
-
-# Keep the async version for backward compatibility
-async def _keepalive(light: BusylightBase, interval: int = 15) -> None:
-    """Send a keep alive packet to a Busylight (legacy async version).
-
-    This function is maintained for backward compatibility. New code should
-    rely on the automatic keepalive started by the on() method.
-
-    The hardware will be configured for a keep alive interval of
-    `interval` seconds, and an asyncio sleep for half that time will
-    be used to schedule the next keep alive packet update.
-    """
-    if interval not in range(16):
-        msg = "Keepalive interval must be between 0 and 15 seconds."
-        raise ValueError(msg)
-
-    sleep_interval = round(interval / 2)
-
-    while True:
-        _send_keepalive(light, interval)  # Use the sync version
-        await asyncio.sleep(sleep_interval)
