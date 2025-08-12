@@ -1,107 +1,79 @@
 # CHANGELOG
 
-## [v0.14.1](https://github.com/JnyJny/busylight-core/releases/tag/v0.14.1) - 2025-07-25 03:17:53
+## [v0.15.0](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.0) - 2025-07-31 20:10:08
 
-## Changes since v0.12.0
+## Changes since v0.14.1
 
-- v0.14.1 (d5daa4c)
-- v0.14.0 (459b4f6)
-- v0.13.0 (f9bac30)
-- docs(CHANGELOG): update release notes (5e64ef0)
-- Merge pull request #16 from JnyJny/features/vendor-lights-classes (4aa867d)
-- docs: update all documentation for vendor Lights classes (b676a52)
-- test: add comprehensive tests for vendor Lights classes (ee27c3c)
-- feat: add vendor-specific Lights classes for direct access (90177e7)
-- feat: Updated busylight_core package with version information string. (9fdfde3)
-- docs: Broken link in README.md (c693c38)
-- docs: Consolidated development info in CONTRIBUTING.md (3054ab3)
-- docs: Removed mute from Kuando in vendor/device table. (86ea9e0)
-- docs: Wordsmithing the README (b6ae056)
-- docs: Fixed doc URLs in README. s/advanced-features/features/ (c5fa708)
-- docs: fix documentation links in README (41703a6)
-- Merge pull request #15 from JnyJny/doc/comprehensive-documentation-improvements (0254345)
-- docs: comprehensive documentation improvements and API reference enhancement (652ce8a)
-- feature: added release method to busylight_core.light.Light (6bce0de)
-- docs: removed nonfunctional fix for footnote rendering. (444f36c)
-- Merge pull request #14 from JnyJny/ci/extract-python-versions-from-pyproject (8833e57)
-- ci: Added toml tool dev dependency for extract python version testing matrix. (d90a202)
-- docs: Update CONTRIBUTING.md for optimized release workflow (b0bcf28)
-- docs: Document optimized release workflow in CLAUDE.md (0ad1067)
-- docs: Document Python version configuration in workflows README (21b5aeb)
-- feat: Add error handling for missing Python version config (aebb765)
-- simplify: Remove unnecessary JSON conversion for Python versions (6866a0f)
-- fix: Use consistent busylight_core naming in tool section (83b21b2)
-- ci: Extract Python test matrix from pyproject.toml (3a89224)
-- docs: Document workflow communication mechanism in README (fa02ff6)
-- ci: Improve GitHub Actions workflow performance and reliability (47293bb)
-- ci: Use pyproject.toml as source of truth for docs Python version (da17b4b)
-- ci: Improve error handling in GitHub Pages auto-enablement (f3af74b)
-- ci: Auto-enable GitHub Pages in docs workflow (5df171f)
-- docs: Add GitHub Pages setup link to workflows README (e3ae0d4)
-- docs: Remove irrelevant Jinja formatting section from workflows README (840d11b)
-- ci: Use pyproject.toml as source of truth for build Python version (e66363a)
-- Merge pull request #13 from JnyJny/ci/optimize-github-actions-workflow (e493911)
-- docs: Update workflows README to reflect optimized architecture (ca8c844)
-- ci: Optimize GitHub Actions workflow architecture (c5aa73f)
-- docs: Optimize CLAUDE.md for token efficiency and objectivity (98f0627)
-- Merge pull request #12 from JnyJny/refactor/standardize-exception-variable-names (f12098c)
-- docs: Standardize exception variable names from 'e' to 'error' (5d6ff49)
-- refactor: Standardize Light class caching to @cache decorator (e7fe6e3)
-- docs(CHANGELOG): update release notes (5b5fced)
+- v0.15.0 (930462b)
+- Merge pull request #22 from JnyJny/features/kuando-keepalive-threading-fallback (a12de10)
+- docs: remove unnecessary Kuando-specific section from CLAUDE.md (b6c590f)
+- docs: remove keepalive mentions from user documentation (1fcfd94)
+- docs: update documentation for TaskableMixin and Kuando keepalive (d552aac)
+- style: ruff formatting cleanup (662176c)
+- fix: add missing interval parameter for periodic keepalive (4aa03f0)
+- refactor: simplify Kuando keepalive implementation (f5695ed)
+- feat: add threading fallback for TaskableMixin (663ba9a)
+- bug: Some serial devices have None for vendor or product IDs (665cb26)
+- feat: add new device support request issue template (7778b86)
+- Merge pull request #20 from JnyJny/docs/update-issue-template-version-info (25a6573)
+- docs: update issue templates with correct version commands (7bfeca3)
+- test: add version attribute validation tests (86c6ac1)
+- Merge pull request #19 from JnyJny/docs/api-reference-navbar (b70e98e)
+- docs: add Implementation links to vendor API reference navigation (d6c77a9)
+- Merge pull request #18 from JnyJny/refactor/vendor-implementation-modules (61ea2b0)
+- refactor: restructure vendor implementations into logical modules (25b16d7)
+- Merge pull request #17 from JnyJny/docs/api-reference-updates (140ee7f)
+- docs: restructure API reference documentation (603e01a)
+- bug: accidently commited working file (a9a089d)
 ## Full Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for complete release notes.
 
 
 ## What's Changed
-* docs: Standardize exception variable names from 'e' to 'error' by @JnyJny in https://github.com/JnyJny/busylight-core/pull/12
-* ci: Optimize GitHub Actions workflow architecture by @JnyJny in https://github.com/JnyJny/busylight-core/pull/13
-* ci: Extract Python test matrix from pyproject.toml by @JnyJny in https://github.com/JnyJny/busylight-core/pull/14
-* Comprehensive Documentation Improvements and API Reference Enhancement by @JnyJny in https://github.com/JnyJny/busylight-core/pull/15
-* feat: add vendor-specific Lights classes for direct access by @JnyJny in https://github.com/JnyJny/busylight-core/pull/16
+* Restructure API reference documentation by @JnyJny in https://github.com/JnyJny/busylight-core/pull/17
+* Refactor vendor implementations into logical modules by @JnyJny in https://github.com/JnyJny/busylight-core/pull/18
+* Add Implementation links to vendor API reference navigation by @JnyJny in https://github.com/JnyJny/busylight-core/pull/19
+* Update issue templates with correct version commands by @JnyJny in https://github.com/JnyJny/busylight-core/pull/20
+* Threading fallback for Kuando keepalive compatibility by @JnyJny in https://github.com/JnyJny/busylight-core/pull/22
 
 
-**Full Changelog**: https://github.com/JnyJny/busylight-core/compare/v0.12.0...v0.14.1
+**Full Changelog**: https://github.com/JnyJny/busylight-core/compare/v0.14.1...v0.15.0
 
 ### Feature
 
 - general:
-  - add vendor-specific Lights classes for direct access ([90177e7](https://github.com/JnyJny/busylight-core/commit/90177e7065df833d231e07e506331885632ef968)) ([#16](https://github.com/JnyJny/busylight-core/pull/16))
-  - Updated busylight_core package with version information string. ([9fdfde3](https://github.com/JnyJny/busylight-core/commit/9fdfde3706bc3ab53d90fca9eebfed99e72e8190))
-  - feature: added release method to busylight_core.light.Light ([6bce0de](https://github.com/JnyJny/busylight-core/commit/6bce0de67a0ad5a63e510bf02494f2a95a97ebd2)) ([#15](https://github.com/JnyJny/busylight-core/pull/15))
-  - Add error handling for missing Python version config ([aebb765](https://github.com/JnyJny/busylight-core/commit/aebb765ad6a660f6ea8fa90dd3eba9a333318208)) ([#14](https://github.com/JnyJny/busylight-core/pull/14))
+  - add threading fallback for TaskableMixin ([663ba9a](https://github.com/JnyJny/busylight-core/commit/663ba9ad1d38a97a9e840cf883e6130fa7bd248d)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
+  - add new device support request issue template ([7778b86](https://github.com/JnyJny/busylight-core/commit/7778b86dd6af4fb20fbf4a82e5b5d57adc4a9957))
 
 ### Bug Fixes
 
 - general:
-  - Use consistent busylight_core naming in tool section ([83b21b2](https://github.com/JnyJny/busylight-core/commit/83b21b295bb0f511780043013bb5dc5ec01d863c)) ([#14](https://github.com/JnyJny/busylight-core/pull/14))
+  - Some serial devices have None for vendor or product IDs ([665cb26](https://github.com/JnyJny/busylight-core/commit/665cb266c1b9968199c13a13d253054dfe763c68))
+  - accidently commited working file ([a9a089d](https://github.com/JnyJny/busylight-core/commit/a9a089d45060fe2b3df342c71fd6d259b0ce0e84))
+
+### Bug Fixes
+
+- general:
+  - add missing interval parameter for periodic keepalive ([4aa03f0](https://github.com/JnyJny/busylight-core/commit/4aa03f005173ba76d9b65860a5602a2db0c7faa0)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
 
 ### Documentation
 
 - general:
-  - update all documentation for vendor Lights classes ([b676a52](https://github.com/JnyJny/busylight-core/commit/b676a52e13d399e3f42eab25fb8b7fcf53a915b1)) ([#16](https://github.com/JnyJny/busylight-core/pull/16))
-  - Broken link in README.md ([c693c38](https://github.com/JnyJny/busylight-core/commit/c693c38a2b9981df399a725f11af15cdad487952))
-  - Consolidated development info in CONTRIBUTING.md ([3054ab3](https://github.com/JnyJny/busylight-core/commit/3054ab34d50b53ffbf2efb1d0eaae99fe02c0129))
-  - Removed mute from Kuando in vendor/device table. ([86ea9e0](https://github.com/JnyJny/busylight-core/commit/86ea9e0c0246823c30f1655d145231b9dae93d12))
-  - Wordsmithing the README ([b6ae056](https://github.com/JnyJny/busylight-core/commit/b6ae0563174fd41dc30b2cc02040f774eef0a049))
-  - Fixed doc URLs in README. s/advanced-features/features/ ([c5fa708](https://github.com/JnyJny/busylight-core/commit/c5fa708fb596990620503a008f5af78b9c5ae8ff))
-  - fix documentation links in README ([41703a6](https://github.com/JnyJny/busylight-core/commit/41703a65ac75a85f79b61845c4ec52b1974eb8da))
-  - comprehensive documentation improvements and API reference enhancement ([652ce8a](https://github.com/JnyJny/busylight-core/commit/652ce8a522e0b29ce4e687a1de26a3c5991d7d84)) ([#15](https://github.com/JnyJny/busylight-core/pull/15))
-  - removed nonfunctional fix for footnote rendering. ([444f36c](https://github.com/JnyJny/busylight-core/commit/444f36c5e662666148bcb18a1a57ddafb3cbfcc0)) ([#15](https://github.com/JnyJny/busylight-core/pull/15))
-  - Update CONTRIBUTING.md for optimized release workflow ([b0bcf28](https://github.com/JnyJny/busylight-core/commit/b0bcf28b96ce93673dc6aafd33cbdd503ef85b36)) ([#14](https://github.com/JnyJny/busylight-core/pull/14))
-  - Document optimized release workflow in CLAUDE.md ([0ad1067](https://github.com/JnyJny/busylight-core/commit/0ad1067b01204e66f69c357f6eb3861f0a45730a)) ([#14](https://github.com/JnyJny/busylight-core/pull/14))
-  - Document Python version configuration in workflows README ([21b5aeb](https://github.com/JnyJny/busylight-core/commit/21b5aeb24402e6dacdfb472463cf3523a7ef9231)) ([#14](https://github.com/JnyJny/busylight-core/pull/14))
-  - Document workflow communication mechanism in README ([fa02ff6](https://github.com/JnyJny/busylight-core/commit/fa02ff63d33133a9d7a8ed4f12b393c54f524b83))
-  - Add GitHub Pages setup link to workflows README ([e3ae0d4](https://github.com/JnyJny/busylight-core/commit/e3ae0d468f64342b9ad70d565d9e1d05f5973127))
-  - Remove irrelevant Jinja formatting section from workflows README ([840d11b](https://github.com/JnyJny/busylight-core/commit/840d11b929cef7996dcee53d4b33f69f7ebbdd15))
-  - Update workflows README to reflect optimized architecture ([ca8c844](https://github.com/JnyJny/busylight-core/commit/ca8c84485d3cc1742e496a436dbb1b9089d6165d)) ([#13](https://github.com/JnyJny/busylight-core/pull/13))
-  - Optimize CLAUDE.md for token efficiency and objectivity ([98f0627](https://github.com/JnyJny/busylight-core/commit/98f06275c5a954b088e3765a917c140a0b08cfca))
-  - Standardize exception variable names from 'e' to 'error' ([5d6ff49](https://github.com/JnyJny/busylight-core/commit/5d6ff49f3c3263d10bd32e49f61e625152c06ff3)) ([#12](https://github.com/JnyJny/busylight-core/pull/12))
+  - remove unnecessary Kuando-specific section from CLAUDE.md ([b6c590f](https://github.com/JnyJny/busylight-core/commit/b6c590fa299ee41915412d0bf4bdfc9d2136a332)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
+  - remove keepalive mentions from user documentation ([1fcfd94](https://github.com/JnyJny/busylight-core/commit/1fcfd9408d7ceb3a514830e7a11e1837392a9a53)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
+  - update documentation for TaskableMixin and Kuando keepalive ([d552aac](https://github.com/JnyJny/busylight-core/commit/d552aacecdb41c1ecdbe4c763edc383fb868342d)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
+  - update issue templates with correct version commands ([7bfeca3](https://github.com/JnyJny/busylight-core/commit/7bfeca37bf71b9265eb87b886eee80cf91774d22)) ([#20](https://github.com/JnyJny/busylight-core/pull/20))
+  - add Implementation links to vendor API reference navigation ([d6c77a9](https://github.com/JnyJny/busylight-core/commit/d6c77a92374d39c1bab8731339eb8377739e668d)) ([#19](https://github.com/JnyJny/busylight-core/pull/19))
+  - restructure API reference documentation ([603e01a](https://github.com/JnyJny/busylight-core/commit/603e01a606b1d37f55fc3a4b2e0a00da661cff40)) ([#17](https://github.com/JnyJny/busylight-core/pull/17))
 
 ### Refactor
 
 - general:
-  - Standardize Light class caching to @cache decorator ([e7fe6e3](https://github.com/JnyJny/busylight-core/commit/e7fe6e33a6641649d16a0d2bb663733e103f3b01))
+  - simplify Kuando keepalive implementation ([f5695ed](https://github.com/JnyJny/busylight-core/commit/f5695ede2669fef298d4d28776f9f39e7c4dcdff)) ([#22](https://github.com/JnyJny/busylight-core/pull/22))
+  - restructure vendor implementations into logical modules ([25b16d7](https://github.com/JnyJny/busylight-core/commit/25b16d7ee5a565146f9921f678f505dd5ef8886e)) ([#18](https://github.com/JnyJny/busylight-core/pull/18))
+
+## [v0.14.1](https://github.com/JnyJny/busylight-core/releases/tag/v0.14.1) - 2025-07-25 03:17:53
 
 ## [v0.12.0](https://github.com/JnyJny/busylight-core/releases/tag/v0.12.0) - 2025-07-22 20:27:29
 
