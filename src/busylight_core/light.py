@@ -335,6 +335,10 @@ class Light(abc.ABC, TaskableMixin):
             e=self._exclusive,
         )
 
+    def __str__(self) -> str:
+        """Return a human-readable string representation of the light."""
+        return f"{self.vendor()} {self.name}@{self.path}"
+
     @cached_property
     def path(self) -> str:
         """The path to the hardware device."""
