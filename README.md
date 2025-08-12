@@ -74,10 +74,9 @@ from busylight_core import EmbravaLights, LuxaforLights, KuandoLights
 embrava_lights = EmbravaLights.all_lights()
 if embrava_lights:
     light = embrava_lights[0]
-    light.on((255, 0, 0), sound=True)  # Red with audio alert
-    light.dim()  # Reduce brightness
+    light.on((255, 0, 0))  # Red
 
-# Get all Luxafor devices  
+# Get all Luxafor devices
 luxafor_lights = LuxaforLights.all_lights()
 for light in luxafor_lights:
     light.on((0, 255, 0))  # Green
