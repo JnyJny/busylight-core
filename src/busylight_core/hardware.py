@@ -178,6 +178,21 @@ class Hardware:
             path=self.path.decode("utf-8"),
         )
 
+    def as_dict(self) -> dict[str, int | str | bytes | None]:
+        return {
+            "vendor_id": self.vendor_id,
+            "product_id": self.product_id,
+            "path": self.path,
+            "serial_number": self.serial_number,
+            "manufacturer": self.manufacturer_string,
+            "product_string": self.product_string,
+            "release_number": self.release_number,
+            "usage": self.usage,
+            "usage_page": self.usage_page,
+            "bus_type": self.bus_type,
+            "device_type": self.device_type.name,
+        }
+
     @cached_property
     def handle(self) -> HardwareHandle:
         """Hardware device I/O handle."""
