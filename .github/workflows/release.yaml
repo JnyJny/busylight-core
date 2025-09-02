@@ -132,7 +132,7 @@ jobs:
           path: dist/
 
       - name: Auto-generate Changelog
-        uses: BobAnkh/auto-generate-changelog@v1.2.5
+        uses: BobAnkh/auto-generate-changelog@v1.3.0
         with:
           REPO_NAME: 'JnyJny/busylight-core'
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
