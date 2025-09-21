@@ -16,6 +16,16 @@ class BusylightBase(ColorableMixin, KuandoBase):
     the appropriate strategy (asyncio or threading) based on the calling context.
     """
 
+    # EJO there are two different intervals in play with the Kuando busylight:
+    #     1. refresh interval, how often the keepalive function is called
+    #     2. keepalive interval, how long to wait for a keepalive before ending
+    #        the current operation.
+    #
+    #     If the keepalive is shorter than refresh, the light will perform an
+    #     uncommand flash.
+    REFRESH_INTERVAL = 10
+    KEEPALIVE_INTERVAL = 15
+
     @cached_property
     def state(self) -> State:
         """The device state manager."""
@@ -37,29 +47,20 @@ class BusylightBase(ColorableMixin, KuandoBase):
         with self.batch_update():
             self.state.steps[0].jump(self.color)
 
-        # Environment automatically chooses asyncio or threading!
-        self.add_task("keepalive", _keepalive, interval=10)
+        self.add_task("keepalive", self.keepalive, interval=self.REFRESH_INTERVAL)
 
     def off(self, led: int = 0) -> None:
-        """Turn off the Busylight and stop keepalive.
+        """Turn off the Busylight and cancel keepalive task.
 
         :param led: LED index (unused for Busylight devices)
         """
         self.color = (0, 0, 0)
         with self.batch_update():
             self.state.steps[0].jump(self.color)
+
         self.cancel_task("keepalive")
 
-
-def _keepalive(light: BusylightBase, interval: int = 10) -> None:
-    """Send keepalive packet - works in any context.
-
-    This synchronous function can be called from either asyncio or
-    threading contexts. The TaskableMixin automatically handles
-    the appropriate scheduling strategy.
-
-    :param light: The BusylightBase instance to send keepalive to
-    :param interval: Keepalive interval in seconds (0-15)
-    """
-    with light.batch_update():
-        light.state.steps[0].keep_alive(interval)
+    def keepalive(self, *args, **kwargs) -> None:
+        """Send a keepalive command to the Busylight."""
+        with self.batch_update():
+            self.state.steps[0].keep_alive(self.KEEPALIVE_INTERVAL)

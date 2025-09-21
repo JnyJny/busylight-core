@@ -78,11 +78,11 @@ class TestTaskableMixin:
         mock_loop.create_task.return_value = mock_task
 
         # Mock coroutine function
-        async def mock_coroutine(self) -> str:  # noqa: ARG001
+        async def mock_coroutine(self, *args, **kwargs) -> str:  # noqa: ARG001
             return "test_result"
 
         with patch.object(mixin, "event_loop", mock_loop):
-            result = mixin.add_task("test_task", mock_coroutine)
+            result = mixin.add_task("test_task", mock_coroutine, 0)
 
         # Verify task was created and stored
         mock_loop.create_task.assert_called_once()
@@ -101,7 +101,7 @@ class TestTaskableMixin:
 
         mock_loop = Mock()
         with patch.object(mixin, "event_loop", mock_loop):
-            result = mixin.add_task("existing_task", mock_coroutine)
+            result = mixin.add_task("existing_task", mock_coroutine, 0)
 
         # Should return existing task without creating new one
         assert result is existing_task
@@ -122,7 +122,7 @@ class TestTaskableMixin:
             return "test_result"
 
         with patch.object(mixin, "event_loop", mock_loop):
-            mixin.add_task("test_task", mock_coroutine)
+            mixin.add_task("test_task", mock_coroutine, 0)
 
         # Verify the coroutine was called with self
         mock_loop.create_task.assert_called_once()
@@ -248,7 +248,7 @@ class TestTaskableMixinIntegration:
             return "completed"
 
         # Add a task
-        task = mixin.add_task("real_task", test_coroutine)
+        task = mixin.add_task("real_task", test_coroutine, 0)
 
         # Verify it's a real asyncio task
         assert isinstance(task, asyncio.Task)
@@ -279,8 +279,8 @@ class TestTaskableMixinIntegration:
             return "fast_completed"
 
         # Add multiple tasks
-        slow = mixin.add_task("slow", slow_task)
-        fast = mixin.add_task("fast", fast_task)
+        slow = mixin.add_task("slow", slow_task, 0)
+        fast = mixin.add_task("fast", fast_task, 0)
 
         assert len(mixin.tasks) == 2
 
@@ -334,7 +334,7 @@ class TestTaskableMixinEdgeCases:
 
         # This should raise an error when trying to call None
         with pytest.raises(TypeError):
-            mixin.add_task("bad_task", None)
+            mixin.add_task("bad_task", None, 0)
 
     def test_cancel_task_with_none_in_tasks(self) -> None:
         """Test cancel_task when tasks dict contains None."""
