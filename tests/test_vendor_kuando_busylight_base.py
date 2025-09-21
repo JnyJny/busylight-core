@@ -7,7 +7,7 @@ import pytest
 from busylight_core.hardware import ConnectionType, Hardware
 from busylight_core.mixins import ColorableMixin
 from busylight_core.vendors.kuando import BusylightAlpha, BusylightOmega
-from busylight_core.vendors.kuando.busylight_base import BusylightBase, _keepalive
+from busylight_core.vendors.kuando.busylight_base import BusylightBase
 from busylight_core.vendors.kuando.implementation import OpCode, Ring, State, Step
 from busylight_core.vendors.kuando.kuando_base import KuandoBase
 
@@ -238,7 +238,9 @@ class TestKuandoBusylightBase:
             assert all(abs(retrieved_color[i] - color[i]) <= 2 for i in range(3))
             assert busylight.state.steps[0].opcode == OpCode.Jump
             mock_batch.assert_called_once()
-            mock_add_task.assert_called_once_with("keepalive", _keepalive, interval=10)
+            mock_add_task.assert_called_once_with(
+                "keepalive", busylight.keepalive, interval=10
+            )
 
     def test_off_method(self, busylight) -> None:
         """Test off() method."""
@@ -277,7 +279,9 @@ class TestKuandoBusylightBase:
             retrieved_color = busylight.state.steps[0].color
             assert all(abs(retrieved_color[i] - color[i]) <= 2 for i in range(3))
             mock_batch.assert_called_once()
-            mock_add_task.assert_called_once_with("keepalive", _keepalive, interval=10)
+            mock_add_task.assert_called_once_with(
+                "keepalive", busylight.keepalive, interval=10
+            )
 
     def test_off_method_with_led_parameter(self, busylight) -> None:
         """Test off() method with led parameter (should be ignored)."""
@@ -339,75 +343,17 @@ class TestKuandoBusylightKeepAlive:
         light.batch_update = Mock()
         light.batch_update.return_value.__enter__ = Mock()
         light.batch_update.return_value.__exit__ = Mock()
+        # Use the real keepalive method implementation
+        light.keepalive = BusylightBase.keepalive.__get__(light, BusylightBase)
+        light.KEEPALIVE_INTERVAL = BusylightBase.KEEPALIVE_INTERVAL
         return light
 
-    def test_keepalive_default_interval(self, mock_light) -> None:
+    def test_keepalive_(self, mock_light) -> None:
         """Test keepalive with default interval."""
-        # Call the synchronous keepalive function
-        _keepalive(mock_light)
+        mock_light.keepalive()
 
-        # Should call keep_alive with default interval of 10
-        mock_light.state.steps[0].keep_alive.assert_called_with(10)
-        # Should use batch_update
+        mock_light.state.steps[0].keep_alive.assert_called_with(
+            mock_light.KEEPALIVE_INTERVAL
+        )
+
         mock_light.batch_update.assert_called()
-
-    def test_keepalive_custom_interval(self, mock_light) -> None:
-        """Test keepalive with custom interval."""
-        interval = 5
-        # Call the synchronous keepalive function
-        _keepalive(mock_light, interval)
-
-        # Should call keep_alive with specified interval
-        mock_light.state.steps[0].keep_alive.assert_called_with(interval)
-        # Should use batch_update
-        mock_light.batch_update.assert_called()
-
-    def test_keepalive_boundary_values(self, mock_light) -> None:
-        """Test keepalive with boundary interval values."""
-        # Test valid boundary values
-        # Test interval 0
-        _keepalive(mock_light, 0)
-        mock_light.state.steps[0].keep_alive.assert_called_with(0)
-
-        # Reset mock for next test
-        mock_light.state.steps[0].keep_alive.reset_mock()
-
-        # Test interval 15
-        _keepalive(mock_light, 15)
-        mock_light.state.steps[0].keep_alive.assert_called_with(15)
-
-    def test_keepalive_different_intervals(self, mock_light) -> None:
-        """Test keepalive function with different interval values."""
-        test_intervals = [1, 2, 5, 8, 10, 15]
-
-        for interval in test_intervals:
-            # Reset mock for each test
-            mock_light.state.steps[0].keep_alive.reset_mock()
-
-            # Call keepalive with interval
-            _keepalive(mock_light, interval)
-
-            # Verify it was called with the correct interval
-            mock_light.state.steps[0].keep_alive.assert_called_with(interval)
-
-    def test_keepalive_single_execution(self, mock_light) -> None:
-        """Test keepalive function executes once per call."""
-        # Call keepalive multiple times to verify each call is independent
-        _keepalive(mock_light, 8)
-        _keepalive(mock_light, 8)
-        _keepalive(mock_light, 8)
-
-        # Should have called keep_alive 3 times (once per call)
-        assert mock_light.state.steps[0].keep_alive.call_count == 3
-        # Each call should be with the same interval
-        for call in mock_light.state.steps[0].keep_alive.call_args_list:
-            assert call[0][0] == 8
-
-    def test_keepalive_batch_update_usage(self, mock_light) -> None:
-        """Test keepalive uses batch_update correctly."""
-        _keepalive(mock_light)
-
-        # Should use batch_update for each keepalive call
-        mock_light.batch_update.assert_called()
-        mock_light.batch_update.return_value.__enter__.assert_called()
-        mock_light.batch_update.return_value.__exit__.assert_called()
