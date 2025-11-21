@@ -163,8 +163,15 @@ class Hardware:
         return (self.vendor_id, self.product_id)
 
     def __post_init__(self) -> None:
+        if self.vendor_id is None:
+            self.vendor_id = 0
+
+        if self.product_id is None:
+            self.product_id = 0
+
         if self.vendor_id:
             self.vendor_id &= 0x0FFFF
+
         if self.product_id:
             self.product_id &= 0x0FFFF
 
