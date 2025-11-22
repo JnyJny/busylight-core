@@ -24,8 +24,9 @@ class Command(IntEnum):
 class LEDS(IntEnum):
     """LED selection enumeration for Luxafor Flag devices.
 
-    Defines which LEDs to target with commands. Luxafor devices have
-    6 individual LEDs that can be controlled independently or as groups.
+    Defines which LEDs to target with commands. Luxafor (Flag) devices
+    have six individual LEDs that can be controlled independently or as
+    groups.
     """
 
     All = 0xFF

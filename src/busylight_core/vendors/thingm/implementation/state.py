@@ -35,6 +35,7 @@ class State(Word):
 
     def __init__(self) -> None:
         super().__init__(0, 64)
+        self.nleds = 2
 
     report = ReportField()
     action = ActionField()

@@ -50,7 +50,7 @@ class LuxaforBase(Light):
         try:
             product = hardware.product_string.split()[-1].casefold()
         except (KeyError, IndexError) as error:
-            logger.debug(f"problem {error} processing {hardware}")
+            logger.debug(f"problem {error} processing product_string for {hardware}")
             return False
 
         return product in [

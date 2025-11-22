@@ -26,6 +26,10 @@ class Busylight(EPOSBase):
     def __bytes__(self) -> bytes:
         return bytes(self.state)
 
+    @property
+    def nleds(self) -> int:
+        return self.state.nleds
+
     def on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the EPOS Busylight with the specified color.
 

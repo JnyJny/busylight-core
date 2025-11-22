@@ -10,7 +10,7 @@ from .luxafor_base import LuxaforBase
 class Flag(LuxaforBase):
     """Luxafor Flag USB status light with multiple RGB LEDs.
 
-    The Luxafor Flag features 6 individually controllable RGB LEDs
+    The Luxafor Flag features six individually controllable RGB LEDs
     arranged in a flag pattern. Use this class to control Flag devices
     for status indication, notifications, or ambient lighting effects.
     """
@@ -30,6 +30,10 @@ class Flag(LuxaforBase):
         :return: State instance for managing all 6 LEDs
         """
         return State()
+
+    @property
+    def nleds(self) -> int:
+        return 6
 
     def __bytes__(self) -> bytes:
         return bytes(self.state)

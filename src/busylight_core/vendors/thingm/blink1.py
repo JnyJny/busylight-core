@@ -33,6 +33,10 @@ class Blink1(ThingMBase):
         """
         return State()
 
+    @property
+    def nleds(self) -> int:
+        return self.state.nleds
+
     def __bytes__(self) -> bytes:
         return bytes(self.state)
 
@@ -40,8 +44,12 @@ class Blink1(ThingMBase):
         """Turn on the Blink(1) with the specified color.
 
         :param color: RGB color tuple (red, green, blue) with values 0-255
-        :param led: LED index (0 for the first LED, 1 for the second, etc.)
+        :param led: LED index (0 for both LEDs, 1 for the top LED, 2 for the bottom LED)
         """
+
+        # EJO raises ValueError if led is out of range which is not
+        #     a consistent behavior across all devices.
+
         with self.batch_update():
             self.state.clear()
             self.state.report = Report.One

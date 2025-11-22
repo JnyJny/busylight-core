@@ -36,8 +36,12 @@ class BlinkStickBase(AgileInnovativeBase):
 
     @property
     def state(self) -> State:
-        """BlinkStick state property."""
+        """BlinkStick in-memory state."""
         raise NotImplementedError
+
+    @property
+    def nleds(self) -> int:
+        return self.state.nleds
 
     def __bytes__(self) -> bytes:
         """Return the byte representation of the BlinkStick state."""

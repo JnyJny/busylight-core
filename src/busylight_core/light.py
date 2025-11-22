@@ -541,6 +541,15 @@ class Light(abc.ABC, TaskableMixin):
         raise NotImplementedError
 
     @property
+    def nleds(self) -> int:
+        """The number of individually addressable LEDs in the light.
+
+        A value of zero indicates that the light does not have
+        individually addressable LEDs.
+        """
+        return 0
+
+    @property
     @abc.abstractmethod
     def color(self) -> tuple[int, int, int]:
         """Get the current RGB color of the light."""

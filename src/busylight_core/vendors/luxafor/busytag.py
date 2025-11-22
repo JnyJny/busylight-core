@@ -36,11 +36,15 @@ class BusyTag(ColorableMixin, LuxaforBase):
     def __bytes__(self) -> bytes:
         return self.command.encode()
 
+    @property
+    def nleds(self) -> int:
+        return 7
+
     def on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the BusyTag with the specified color.
 
         :param color: RGB color tuple (red, green, blue)
-        :param led: LED index (default is 0, for the first LED)
+        :param led: LED index (default is 0, for all LEDs)
         """
         with self.batch_update():
             self.color = color

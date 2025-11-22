@@ -20,8 +20,8 @@ class Command(str, Enum):
     SolidColor: str = "AT+SC={leds},{red:02x}{green:02x}{blue:02x}"
 
     @classmethod
-    def solid_color(cls, color: tuple[int, int, int], led: int = 0) -> None:
+    def solid_color(cls, color: tuple[int, int, int], led: int = 0) -> str:
         red, green, blue = color
-        led = 127 if led == 0 else 1 << led
+        led = 0b01111111 if led == 0 else 1 << led
 
         return cls.SolidColor.format(leds=led, red=red, green=green, blue=blue)
