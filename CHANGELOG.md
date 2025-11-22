@@ -1,31 +1,39 @@
 # CHANGELOG
 
-## [v0.15.1](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.1) - 2025-08-12 22:28:57
+## [v0.15.2](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.2) - 2025-09-21 15:44:45
 
-## Changes since v0.15.0
+## Changes since v0.15.1
 
-- v0.15.1 (207c44f)
-- feat: added as_dict method to Harwdare (d430726)
-- feat: Added __str__ to Light (b9c973a)
-- docs: Updated README.md examples. (c0d7633)
-- docs(CHANGELOG): update release notes (a937c47)
+- v0.15.2 (38b0dcf)
+- Merge pull request #29 from JnyJny/fix/kuando-keepalive (64ad065)
+- fix: refactor Kuando keepalive to instance method and update tests (6704451)
+- Merge pull request #28 from JnyJny/fix/taskable-mixin-mock-detection (3784e40)
+- fix: TaskableMixin mock detection and vendor test (c7386bf)
+- Merge pull request #24 from JnyJny/dependabot/github_actions/actions/checkout-5 (7a265fa)
+- Merge pull request #23 from JnyJny/dependabot/github_actions/actions/download-artifact-5 (64d3794)
+- docs(CHANGELOG): update release notes (dece051)
+- ci(deps): bump actions/checkout from 4 to 5 (df370c3)
+- ci(deps): bump actions/download-artifact from 4 to 5 (c4c0499)
 ## Full Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for complete release notes.
 
+## What's Changed
+* ci(deps): bump actions/download-artifact from 4 to 5 by @dependabot[bot] in https://github.com/JnyJny/busylight-core/pull/23
+* ci(deps): bump actions/checkout from 4 to 5 by @dependabot[bot] in https://github.com/JnyJny/busylight-core/pull/24
+* fix: TaskableMixin mock detection and vendor test by @JnyJny in https://github.com/JnyJny/busylight-core/pull/28
+* fix: refactor Kuando keepalive to instance method and update tests by @JnyJny in https://github.com/JnyJny/busylight-core/pull/29
 
-**Full Changelog**: https://github.com/JnyJny/busylight-core/compare/v0.15.0...v0.15.1
 
-### Feature
+**Full Changelog**: https://github.com/JnyJny/busylight-core/compare/v0.15.1...v0.15.2
+
+### Bug Fixes
 
 - general:
-  - added as_dict method to Harwdare ([d430726](https://github.com/JnyJny/busylight-core/commit/d430726708ed76f3093de6e47cfae6766d6c39b0))
-  - Added __str__ to Light ([b9c973a](https://github.com/JnyJny/busylight-core/commit/b9c973a5334c565371cbdac17e49a1d0a6cbeae1))
+  - refactor Kuando keepalive to instance method and update tests ([6704451](https://github.com/JnyJny/busylight-core/commit/6704451abbc83c4b81eb25e1a88e6de90b0836af)) ([#29](https://github.com/JnyJny/busylight-core/pull/29))
+  - TaskableMixin mock detection and vendor test ([c7386bf](https://github.com/JnyJny/busylight-core/commit/c7386bffe60fcb935b39d15d2065cf0843b0999d)) ([#28](https://github.com/JnyJny/busylight-core/pull/28))
 
-### Documentation
-
-- general:
-  - Updated README.md examples. ([c0d7633](https://github.com/JnyJny/busylight-core/commit/c0d7633ca1249f9eca1f881fdc00cc4795e13b0d))
+## [v0.15.1](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.1) - 2025-08-12 22:28:57
 
 ## [v0.15.0](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.0) - 2025-07-31 20:10:08
 
