@@ -210,7 +210,13 @@ class Light(abc.ABC, TaskableMixin):
         return available_lights
 
     @classmethod
-    def all_lights(cls, *, reset: bool = True, exclusive: bool = True) -> list[Light]:
+    def all_lights(
+        cls,
+        *,
+        reset: bool = True,
+        exclusive: bool = True,
+        predicate: callable[[Hardware], bool] | None = None,
+    ) -> list[Light]:
         """Create initialized Light instances for all available compatible devices.
 
         Discovers all compatible hardware and returns Light instances ready for
@@ -222,12 +228,16 @@ class Light(abc.ABC, TaskableMixin):
 
         :param reset: Reset devices to known state during initialization
         :param exclusive: Acquire exclusive access to prevent interference
+        :param predicate: Optional callable to filter devices based on custom criteria
         :return: List of initialized Light instances, empty if none found
         """
         lights: list[Light] = []
 
         for subclass, devices in cls.available_hardware().items():
             for device in devices:
+                if predicate and not predicate(device):
+                    logger.info(f"Hardware {device} did not satisfy predicate")
+                    continue
                 try:
                     lights.append(subclass(device, reset=reset, exclusive=exclusive))
                 except Exception as error:
@@ -236,7 +246,13 @@ class Light(abc.ABC, TaskableMixin):
         return lights
 
     @classmethod
-    def first_light(cls, *, reset: bool = True, exclusive: bool = True) -> Light:
+    def first_light(
+        cls,
+        *,
+        reset: bool = True,
+        exclusive: bool = True,
+        predicate: callable[[Hardware], bool] | None = None,
+    ) -> Light:
         """Create the first available Light instance ready for immediate use.
 
         Discovers compatible devices and returns the first successfully
@@ -246,11 +262,15 @@ class Light(abc.ABC, TaskableMixin):
 
         :param reset: Reset device to known state during initialization
         :param exclusive: Acquire exclusive access to prevent interference
+        :param predicate: Optional callable to filter devices based on custom criteria
         :return: Initialized Light instance ready for control
         :raises NoLightsFoundError: If no compatible devices found or init fails
         """
         for subclass, devices in cls.available_hardware().items():
             for device in devices:
+                if predicate and not predicate(device):
+                    logger.info(f"Hardware {device} did not satisfy predicate")
+                    continue
                 try:
                     return subclass(device, reset=reset, exclusive=exclusive)
                 except Exception as error:
@@ -258,6 +278,23 @@ class Light(abc.ABC, TaskableMixin):
                     raise
 
         raise NoLightsFoundError(cls)
+
+    @classmethod
+    def at_path(cls, path: str, reset: bool = True, exclusive: bool = True) -> Light:
+        """Create a Light instance for the device at the specified path.
+
+        :param path: Filesystem path to the target hardware device
+        :param reset: Reset the device to a known state during initialization
+        :param exclusive: Acquire exclusive access to prevent interference
+        :return: Initialized Light instance for the specified device
+
+        :raises NoLightsFoundError: If no device found with a matching path
+        """
+        return cls.first_light(
+            reset=reset,
+            exclusive=exclusive,
+            predicate=lambda hardware: hardware.path.decode("utf-8") == path,
+        )
 
     @classmethod
     def udev_rules(cls, mode: int = 0o666) -> dict[tuple[int, int], list[str]]:
