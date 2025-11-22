@@ -78,7 +78,7 @@ class TestTaskableMixin:
         mock_loop.create_task.return_value = mock_task
 
         # Mock coroutine function
-        async def mock_coroutine(self, *args, **kwargs) -> str:  # noqa: ARG001
+        async def mock_coroutine(self, *args, **kwargs) -> str:  # noqa: ARG001, ANN002, ANN003
             return "test_result"
 
         with patch.object(mixin, "event_loop", mock_loop):

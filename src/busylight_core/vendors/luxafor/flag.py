@@ -33,6 +33,7 @@ class Flag(LuxaforBase):
 
     @property
     def nleds(self) -> int:
+        """The number of individually addressable LEDs."""
         return 6
 
     def __bytes__(self) -> bytes:

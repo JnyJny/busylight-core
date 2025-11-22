@@ -35,6 +35,7 @@ class Blink1(ThingMBase):
 
     @property
     def nleds(self) -> int:
+        """The number of individually addressable LEDs."""
         return self.state.nleds
 
     def __bytes__(self) -> bytes:
@@ -46,7 +47,6 @@ class Blink1(ThingMBase):
         :param color: RGB color tuple (red, green, blue) with values 0-255
         :param led: LED index (0 for both LEDs, 1 for the top LED, 2 for the bottom LED)
         """
-
         # EJO raises ValueError if led is out of range which is not
         #     a consistent behavior across all devices.
 

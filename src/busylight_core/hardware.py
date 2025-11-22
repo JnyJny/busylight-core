@@ -185,7 +185,9 @@ class Hardware:
             path=self.path.decode("utf-8"),
         )
 
+    @cached_property
     def as_dict(self) -> dict[str, int | str | bytes | None]:
+        """Return hardware information as a dictionary."""
         return {
             "vendor_id": self.vendor_id,
             "product_id": self.product_id,

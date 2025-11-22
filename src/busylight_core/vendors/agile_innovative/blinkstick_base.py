@@ -41,6 +41,7 @@ class BlinkStickBase(AgileInnovativeBase):
 
     @property
     def nleds(self) -> int:
+        """The number of individually addressable LEDs."""
         return self.state.nleds
 
     def __bytes__(self) -> bytes:

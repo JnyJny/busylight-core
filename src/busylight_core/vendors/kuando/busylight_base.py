@@ -60,7 +60,7 @@ class BusylightBase(ColorableMixin, KuandoBase):
 
         self.cancel_task("keepalive")
 
-    def keepalive(self, *args, **kwargs) -> None:
+    def keepalive(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         """Send a keepalive command to the Busylight."""
         with self.batch_update():
             self.state.steps[0].keep_alive(self.KEEPALIVE_INTERVAL)

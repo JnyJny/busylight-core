@@ -28,6 +28,7 @@ class Busylight(EPOSBase):
 
     @property
     def nleds(self) -> int:
+        """The number of individually addressable LEDs."""
         return self.state.nleds
 
     def on(self, color: tuple[int, int, int], led: int = 0) -> None:
