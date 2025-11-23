@@ -290,10 +290,11 @@ class Light(abc.ABC, TaskableMixin):
 
         :raises NoLightsFoundError: If no device found with a matching path
         """
+        path = path.encode("utf-8")
         return cls.first_light(
             reset=reset,
             exclusive=exclusive,
-            predicate=lambda hardware: hardware.path.decode("utf-8") == path,
+            predicate=lambda hardware: hardware.path == path,
         )
 
     @classmethod
