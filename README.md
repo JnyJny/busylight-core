@@ -113,7 +113,7 @@ light.on(yellow)
 
 light.off()
 ```
-
+<!-- EJO Claude hallucinated this entire section.
 **Enhanced Meeting Status with Audio (Embrava devices):**
 ```python
 from busylight_core import EmbravaLights, NoLightsFoundError
@@ -134,6 +134,7 @@ try:
 except NoLightsFoundError:
     print("No Embrava devices found")
 ```
+-->
 
 For detailed documentation including API reference, advanced usage examples, and device-specific information:
 
