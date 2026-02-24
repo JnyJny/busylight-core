@@ -10,15 +10,9 @@ Import and use the library directly in your Python code:
 from busylight_core import Light, NoLightsFoundError
 
 try:
-    # Get the first available light
     light = Light.first_light()
-    
-    # Turn on red
     light.on((255, 0, 0))
-    
-    # Turn off
     light.off()
-    
 except NoLightsFoundError:
     print("No lights found")
 ```
@@ -33,11 +27,11 @@ from busylight_core import Light, NoLightsFoundError
 try:
     # Standard initialization - resets device and acquires exclusive access
     light = Light.first_light()
-    
+
     # Explicitly control initialization behavior
-    light = Light.first_light(reset=True, exclusive=True)   # Default behavior
-    light = Light.first_light(reset=False, exclusive=False) # No reset, shared access
-    
+    light = Light.first_light(reset=True, exclusive=True)    # Default behavior
+    light = Light.first_light(reset=False, exclusive=False)  # No reset, shared access
+
 except NoLightsFoundError:
     print("No lights found")
 ```

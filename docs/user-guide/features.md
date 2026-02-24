@@ -28,9 +28,9 @@ Get detailed information about connected devices:
 for light in Light.all_lights():
     print(f"Vendor: {light.vendor()}")
     print(f"Model: {light.name}")
-    print(f"Device ID: {light.device_id}")
-    print(f"Connection Type: {light.hardware.device_type}")
-    print(f"USB Path: {light.hardware.path}")
+    print(f"Path: {light.path}")
+    print(f"Hardware: {light.hardware.manufacturer_string}")
+    print(f"Device ID: {light.hardware.device_id}")
 ```
 
 ## Color Management
@@ -42,7 +42,7 @@ Busylight Core uses RGB color tuples with integer values from 0-255:
 ```python
 try:
     light = Light.first_light()
-    
+
     # RGB tuples (0-255) - only supported format
     light.on((255, 0, 0))      # Red
     light.on((0, 255, 0))      # Green
@@ -52,208 +52,230 @@ try:
     light.on((0, 255, 255))    # Cyan
     light.on((255, 255, 255))  # White
     light.on((128, 128, 128))  # Gray (50% brightness)
-    
+
     # Turn off
     light.off()
-    
+
+    # Check state
+    print(f"Color: {light.color}")
+    print(f"Is lit: {light.is_lit}")
+
 except NoLightsFoundError:
     print("No lights available")
 ```
 
-## Advanced Device Features
+## Vendor-Specific Features
 
-### Multi-LED Devices
+Different vendors provide different capabilities beyond basic color control. These features are only available on the specific device classes listed.
 
-Control devices with multiple LEDs individually:
+### Multi-LED Devices (BlinkStick, Luxafor Flag)
 
-```python
-from busylight_core import BlinkStick, Light
-
-# Find multi-LED devices
-multi_led_devices = []
-for light in Light.all_lights():
-    if hasattr(light, 'on') and 'led' in light.on.__annotations__:
-        multi_led_devices.append(light)
-
-if multi_led_devices:
-    device = multi_led_devices[0]
-    
-    # Control individual LEDs (if supported)
-    device.on((255, 0, 0), led=0)    # First LED red
-    device.on((0, 255, 0), led=1)    # Second LED green
-    device.on((0, 0, 255), led=2)    # Third LED blue
-```
-
-### Audio-Enabled Devices
-
-Control devices with built-in audio:
+Some devices have multiple individually addressable LEDs. Use the `led` parameter on `on()`:
 
 ```python
-from busylight_core import Blynclight, Light
+from busylight_core import Flag, BlinkStickSquare, NoLightsFoundError
 
-# Find audio-capable devices
-audio_devices = []
-for light in Light.all_lights():
-    if hasattr(light, 'on') and 'sound' in light.on.__annotations__:
-        audio_devices.append(light)
-
-if audio_devices:
-    device = audio_devices[0]
-    
-    # Control with sound (if supported)
-    device.on((255, 0, 0), sound=True)      # Red with sound
-    
-    # Mute/unmute functions (if available)
-    if hasattr(device, 'mute'):
-        device.mute()
-    if hasattr(device, 'unmute'):
-        device.unmute()
-```
-
-### Flash Patterns
-
-Use hardware flash capabilities:
-
-```python
-# Check for flash support
+# Luxafor Flag has 6 LEDs
 try:
-    light = Light.first_light()
-    
-    if hasattr(light, 'flash'):
-        light.flash((255, 0, 0))  # Flash red (device-specific timing)
-        print("Device supports hardware flash")
-    else:
-        print("Device does not support hardware flash")
-        
+    flag = Flag.first_light()
+    flag.on((255, 0, 0), led=0)    # First LED red
+    flag.on((0, 255, 0), led=1)    # Second LED green
+    flag.on((0, 0, 255), led=2)    # Third LED blue
+    flag.on((255, 255, 0))         # led=0 targets all LEDs
 except NoLightsFoundError:
-    print("No lights available")
+    pass
+
+# BlinkStick Square has 8 LEDs
+try:
+    square = BlinkStickSquare.first_light()
+    square.on((255, 0, 0), led=0)
+    square.on((0, 255, 0), led=1)
+except NoLightsFoundError:
+    pass
 ```
 
-### Button Input Devices
+The `led` parameter is accepted by all devices (it's part of the base `on()` signature), but only multi-LED devices use it meaningfully. Single-LED devices ignore it.
 
-Handle button input on interactive devices:
+### Audio (Embrava Blynclight Plus Only)
+
+Only the `BlynclightPlus` has audio playback:
 
 ```python
-from busylight_core import MuteMe
+from busylight_core import BlynclightPlus, NoLightsFoundError
 
-# Find devices with button input
-button_devices = []
-for light in Light.all_lights():
-    if hasattr(light, 'button_pressed'):
-        button_devices.append(light)
+try:
+    light = BlynclightPlus.first_light()
 
-if button_devices:
-    device = button_devices[0]
-    
-    # Check button state
-    if device.button_pressed():
-        print("Button is currently pressed")
-        device.on((255, 0, 0))  # Red when pressed
-    else:
-        device.on((0, 255, 0))  # Green when not pressed
+    # Play a sound (music: 0-7, volume: 0-3)
+    light.play_sound(music=0, volume=1, repeat=False)
+
+    # Stop sound
+    light.stop_sound()
+
+    # Mute/unmute
+    light.mute()
+    light.unmute()
+
+except NoLightsFoundError:
+    print("No Blynclight Plus devices found")
 ```
+
+**Note:** The `Blynclight` and `BlynclightMini` do NOT have audio support. Only the `BlynclightPlus` class exposes `play_sound()`, `stop_sound()`, `mute()`, and `unmute()`.
+
+### Flash Patterns (Embrava Only)
+
+Only Embrava devices (`Blynclight`, `BlynclightMini`, `BlynclightPlus`) support hardware flash:
+
+```python
+from busylight_core import EmbravaLights, NoLightsFoundError
+from busylight_core.vendors.embrava.implementation import FlashSpeed
+
+try:
+    light = EmbravaLights.first_light()
+
+    # Flash with default speed
+    light.flash((255, 0, 0))
+
+    # Flash with explicit speed
+    light.flash((255, 255, 0), speed=FlashSpeed.slow)
+
+    # Stop flashing
+    light.stop_flashing()
+
+except NoLightsFoundError:
+    print("No Embrava devices found")
+```
+
+### Brightness Control (Embrava Only)
+
+```python
+from busylight_core import EmbravaLights, NoLightsFoundError
+
+try:
+    light = EmbravaLights.first_light()
+    light.on((255, 0, 0))
+    light.dim()       # Reduce brightness
+    light.bright()    # Restore full brightness
+except NoLightsFoundError:
+    pass
+```
+
+### Button Input (MuteMe, Luxafor Mute)
+
+Some devices have physical buttons. Check for button support using `is_button`:
+
+```python
+from busylight_core import MuteMe, NoLightsFoundError
+
+try:
+    device = MuteMe.first_light()
+
+    if device.is_button:
+        if device.button_on:
+            print("Button is currently pressed")
+            device.on((255, 0, 0))  # Red when pressed
+        else:
+            device.on((0, 255, 0))  # Green when not pressed
+
+except NoLightsFoundError:
+    print("No MuteMe devices found")
+```
+
+**Properties:**
+- `is_button` - `True` if the device has a physical button
+- `button_on` - `True` if the button is currently pressed
+
+These are available on `MuteMe`, `MuteMeMini`, `MuteSync`, and `Mute` (Luxafor Mute).
+
+### Kuando Keepalive
+
+Kuando Busylight devices (Alpha, Omega) require periodic keepalive packets to stay active. This is handled automatically -- when you call `on()`, a keepalive task starts. When you call `off()`, it stops. You do not need to manage keepalive manually.
+
+```python
+from busylight_core import KuandoLights, NoLightsFoundError
+
+try:
+    light = KuandoLights.first_light()
+    light.on((0, 255, 0))   # Keepalive starts automatically
+    # ... light stays on ...
+    light.off()              # Keepalive stops automatically
+except NoLightsFoundError:
+    pass
+```
+
+**Note on Kuando ringtones:** The Kuando protocol supports ringtones (9 tones plus off) and volume control at the command level, but this is not currently exposed through the public `on()` API. If you need ringtone support, you would need to work with the low-level `Step.jump()` command directly (see `busylight_core.vendors.kuando.implementation.commands`).
 
 ## Task Management
 
-### Automatic Environment Detection
+Every Light instance includes task management that automatically adapts to your environment (asyncio or threading):
 
-Every Light instance includes task management that automatically adapts to your environment:
+```python
+import time
+from busylight_core import Light, NoLightsFoundError
+
+try:
+    light = Light.first_light()
+
+    # Define a task function (receives the light as argument)
+    def blink(light):
+        if light.is_lit:
+            light.off()
+        else:
+            light.on((255, 0, 0))
+
+    # Add a periodic task
+    light.add_task("blink", blink, interval=1.0)
+
+    time.sleep(5)  # Let it blink for 5 seconds
+
+    # Cancel specific task
+    light.cancel_task("blink")
+
+    # Or cancel all tasks
+    light.cancel_tasks()
+
+except NoLightsFoundError:
+    print("No lights found")
+```
+
+### Asyncio Context
 
 ```python
 import asyncio
 from busylight_core import Light, NoLightsFoundError
 
-try:
-    light = Light.first_light()
-    
-    # Define a task function (sync or async - both work!)
-    def blink_sync():
-        """Synchronous blink function"""
-        light.on((255, 0, 0))
-        # TaskableMixin handles the periodic execution
-    
-    async def blink_async():
-        """Asynchronous blink function"""
-        light.on((0, 255, 0))
-        await asyncio.sleep(0.1)  # Can use async operations
-    
-    # Add periodic tasks - environment automatically detected
-    light.add_task("sync_blink", blink_sync, interval=1.0)     # Every 1 second
-    light.add_task("async_blink", blink_async, interval=2.0)   # Every 2 seconds
-    
-    # Works in both asyncio and non-asyncio contexts!
-    # - Asyncio context: Uses asyncio.Task
-    # - Non-asyncio context: Uses threading.Timer
-    
-    # Cancel specific task
-    light.cancel_task("sync_blink")
-    
-    # Cancel all tasks
-    light.cancel_tasks()
-    
-except NoLightsFoundError:
-    print("No lights found")
-```
-
-### Asyncio Context Example
-
-```python
-import asyncio
-from busylight_core import Light
-
 async def main():
-    light = Light.first_light()
-    
-    # In asyncio context: automatically uses asyncio.Task
-    async def fade_task():
-        for brightness in range(0, 256, 16):
-            light.on((brightness, 0, 0))
-            await asyncio.sleep(0.1)
-    
-    light.add_task("fade", fade_task, interval=3.0)  # Repeat every 3 seconds
-    await asyncio.sleep(10)  # Let it run for 10 seconds
-    light.cancel_tasks()
+    try:
+        light = Light.first_light()
 
-# Run in asyncio context
+        async def fade(light):
+            for brightness in range(0, 256, 16):
+                light.on((brightness, 0, 0))
+                await asyncio.sleep(0.1)
+
+        light.add_task("fade", fade, interval=3.0)
+        await asyncio.sleep(10)
+        light.cancel_tasks()
+
+    except NoLightsFoundError:
+        print("No lights found")
+
 asyncio.run(main())
 ```
 
-### Non-Asyncio Context Example
-
-```python
-import time
-from busylight_core import Light
-
-def main():
-    light = Light.first_light()
-    
-    # In non-asyncio context: automatically uses threading.Timer
-    def pulse_task():
-        light.on((0, 128, 255))  # Blue pulse
-        # No sleep needed - TaskableMixin handles timing
-    
-    light.add_task("pulse", pulse_task, interval=0.5)  # Pulse every 0.5 seconds
-    time.sleep(5)  # Let it run for 5 seconds
-    light.cancel_tasks()
-
-# Run in regular Python context
-main()
-```
+In asyncio contexts, tasks use `asyncio.Task`. In non-asyncio contexts, they use `threading.Timer`. The selection is automatic.
 
 ## Error Handling
 
 ### Exception Types
 
-Busylight Core provides specific exceptions:
-
 ```python
 from busylight_core import Light, LightUnavailableError, NoLightsFoundError
 
 try:
-    # Try to get a light
     light = Light.first_light()
     light.on((255, 0, 0))
-    
+
 except NoLightsFoundError:
     print("No busylights found. Please connect a device.")
 except LightUnavailableError as error:
@@ -264,14 +286,12 @@ except Exception as error:
 
 ### Hardware Debugging
 
-Debug hardware detection issues:
-
 ```python
-import logging
+from loguru import logger
 from busylight_core import Light, Hardware
 
 # Enable debug logging
-logging.basicConfig(level=logging.DEBUG)
+logger.enable("busylight_core")
 
 # Check hardware detection
 hardware_devices = Hardware.enumerate()
@@ -288,7 +308,10 @@ print(f"Recognized {len(lights)} as lights:")
 
 for light in lights:
     print(f"  {light.vendor()} {light.name}")
-    print(f"    Claimed by: {light.__class__.__name__}")
+    print(f"    Class: {light.__class__.__name__}")
+
+# Disable logging when done
+logger.disable("busylight_core")
 ```
 
 ## Next Steps

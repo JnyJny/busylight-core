@@ -17,28 +17,25 @@ pip install busylight_core
 Then use it in your Python code:
 
 ```python
-from busylight_core import Light
+from busylight_core import Light, NoLightsFoundError
 
-# Find all connected lights
-lights = Light.available()
-print(f"Found {len(lights)} device(s)")
-
-# Control a light
-if lights:
-    light = lights[0]
+try:
+    light = Light.first_light()
     light.on((255, 0, 0))  # Turn on red
-    light.off()           # Turn off
+    light.off()             # Turn off
+except NoLightsFoundError:
+    print("No compatible lights found")
 ```
 
 ## Features
 
 - **Multi-Vendor Support** - Control devices from 9+ vendors (Embrava, Kuando, Luxafor, ThingM, and more)
-- **Multiple Connection Types** - HID, Serial, and Bluetooth device support
-- **Rich Light Control** - Colors, brightness, flash patterns, fade effects
-- **Audio Capabilities** - Sound playback and mute/unmute on supported devices
-- **Input Detection** - Button press handling on interactive devices
-- **Multi-LED Support** - Control devices with 1-192 individual LEDs
-- **Async Task Management** - Built-in support for animations and effects
+- **Multiple Connection Types** - HID and Serial device support
+- **Rich Light Control** - Colors, brightness, flash patterns
+- **Audio Capabilities** - Sound playback on Embrava Blynclight Plus devices
+- **Input Detection** - Button state on MuteMe and Luxafor Mute devices
+- **Multi-LED Support** - Control devices with 1-64+ individual LEDs (BlinkStick, Luxafor Flag)
+- **Async Task Management** - Built-in support for periodic tasks and animations
 - **Extensible Architecture** - Easy to add support for new devices
 - **Object-Oriented API** - Clean, intuitive programming interface
 
@@ -56,6 +53,7 @@ For detailed installation instructions, see [Installation](getting-started/insta
 ## License
 
 This project is licensed under the Apache-2.0 license.
+
 ## Support
 
 - [GitHub Issues](https://github.com/JnyJny/busylight_core/issues)
