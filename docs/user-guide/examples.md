@@ -19,9 +19,8 @@ try:
     print(f"Using: {light.vendor()} {light.name}")
 except NoLightsFoundError:
     print("No lights found")
-    light = None
 
-# Find lights by vendor  
+# Find lights by vendor
 embrava_lights = [l for l in lights if l.vendor() == "Embrava"]
 ```
 
@@ -32,155 +31,229 @@ from busylight_core import Light, NoLightsFoundError
 
 try:
     light = Light.first_light()
-    
+
     # Turn on with different colors
     light.on((255, 0, 0))    # Red
     light.on((0, 255, 0))    # Green
     light.on((0, 0, 255))    # Blue
     light.on((255, 255, 0))  # Yellow
-    
+
     # Turn off
     light.off()
-    
-    # Check if light is on
-    if light.is_on:
-        print("Light is currently on")
-        
+
+    # Check state
+    print(f"Color: {light.color}")
+    print(f"Is lit: {light.is_lit}")
+
 except NoLightsFoundError:
     print("No lights found")
 ```
 
-## Advanced Light Control
+## Vendor-Specific Examples
 
-### Flash Patterns and Effects
-
-```python
-# Flash patterns
-light.flash((255, 0, 0), count=3)           # Flash red 3 times
-light.flash((0, 255, 0), duration=0.5)      # Custom flash duration
-light.flash((255, 255, 0), count=5, delay=0.2)  # Custom count and delay
-
-# Fade effects (for supported devices like Blink(1))
-if hasattr(light, 'fade'):
-    light.fade((255, 0, 0), duration=2.0)   # Fade to red over 2 seconds
-```
-
-### Multi-LED Device Control
+### Embrava Blynclight - Flash and Brightness
 
 ```python
-from busylight_core import BlinkStick
+from busylight_core import EmbravaLights, NoLightsFoundError
+from busylight_core.vendors.embrava.implementation import FlashSpeed
 
-# Find BlinkStick devices (support multiple LEDs)
-blinksticks = [l for l in Light.available() if isinstance(l, BlinkStick)]
+try:
+    light = EmbravaLights.first_light()
 
-if blinksticks:
-    stick = blinksticks[0]
-    
-    # Control individual LEDs
-    stick.set_led(0, (255, 0, 0))    # First LED red
-    stick.set_led(1, (0, 255, 0))    # Second LED green
-    stick.set_led(2, (0, 0, 255))    # Third LED blue
-    
-    # Set all LEDs to same color
-    stick.set_all((255, 255, 255))   # All white
+    # Solid color
+    light.on((255, 0, 0))
+
+    # Dim and restore
+    light.dim()
+    light.bright()
+
+    # Flash with default speed
+    light.flash((255, 255, 0))
+
+    # Flash with explicit speed
+    light.flash((255, 0, 0), speed=FlashSpeed.slow)
+
+    # Stop flashing
+    light.stop_flashing()
+
+    # Turn off
+    light.off()
+
+except NoLightsFoundError:
+    print("No Embrava devices found")
 ```
 
-### Audio-Enabled Devices
+### Embrava Blynclight Plus - Audio
 
 ```python
-from busylight_core import Blynclight
+from busylight_core import BlynclightPlus, NoLightsFoundError
 
-# Find Blynclight devices (support audio)
-blynclights = [l for l in Light.available() if isinstance(l, Blynclight)]
+try:
+    light = BlynclightPlus.first_light()
 
-if blynclights:
-    blight = blynclights[0]
-    
-    # Control with sound
-    blight.on((255, 0, 0), sound=True)      # Red with sound
-    blight.flash((255, 255, 0), sound=True)  # Flash yellow with sound
-    
-    # Mute/unmute functions
-    blight.mute()
-    blight.unmute()
+    # Turn on with color
+    light.on((255, 0, 0))
+
+    # Play a sound (music track 0-7, volume 0-3)
+    light.play_sound(music=0, volume=2, repeat=False)
+
+    # Mute/unmute
+    light.mute()
+    light.unmute()
+
+    # Stop sound
+    light.stop_sound()
+
+    light.off()
+
+except NoLightsFoundError:
+    print("No Blynclight Plus devices found")
 ```
 
-## Async Programming
+### Kuando Busylight - Basic Usage
 
-### Using Built-in Task Management
+```python
+from busylight_core import KuandoLights, BusylightOmega, NoLightsFoundError
+
+# Any Kuando device
+try:
+    light = KuandoLights.first_light()
+    light.on((0, 255, 0))   # Keepalive managed automatically
+    # ... light stays on ...
+    light.off()              # Keepalive cancelled automatically
+except NoLightsFoundError:
+    print("No Kuando devices found")
+
+# Specific Omega devices only
+try:
+    omega = BusylightOmega.first_light()
+    omega.on((0, 0, 255))
+    omega.off()
+except NoLightsFoundError:
+    print("No Omega devices found")
+```
+
+### Luxafor Flag - Multi-LED Control
+
+```python
+from busylight_core import Flag, NoLightsFoundError
+
+try:
+    flag = Flag.first_light()
+
+    # Control individual LEDs (Flag has 6 LEDs)
+    flag.on((255, 0, 0), led=1)    # LED 1 red
+    flag.on((0, 255, 0), led=2)    # LED 2 green
+    flag.on((0, 0, 255), led=3)    # LED 3 blue
+
+    # All LEDs same color (led=0 means all)
+    flag.on((255, 255, 255))
+
+    flag.off()
+
+except NoLightsFoundError:
+    print("No Luxafor Flag devices found")
+```
+
+### BlinkStick - Multi-LED Control
+
+```python
+from busylight_core import BlinkStickSquare, BlinkStickPro, NoLightsFoundError
+
+# BlinkStick Square has 8 LEDs
+try:
+    square = BlinkStickSquare.first_light()
+    colors = [(255,0,0), (255,127,0), (255,255,0), (0,255,0),
+              (0,0,255), (75,0,130), (148,0,211), (255,255,255)]
+    for i, color in enumerate(colors):
+        square.on(color, led=i)
+except NoLightsFoundError:
+    pass
+
+# BlinkStick Pro has 64 LEDs
+try:
+    pro = BlinkStickPro.first_light()
+    pro.on((255, 0, 0), led=0)
+    pro.on((0, 255, 0), led=1)
+except NoLightsFoundError:
+    pass
+```
+
+### MuteMe - Button Input
+
+```python
+from busylight_core import MuteMe, MuteMeLights, NoLightsFoundError
+
+try:
+    device = MuteMe.first_light()
+
+    # Check button capability and state
+    if device.is_button:
+        if device.button_on:
+            print("Button is pressed")
+            device.on((255, 0, 0))  # Red = muted
+        else:
+            print("Button is not pressed")
+            device.on((0, 255, 0))  # Green = unmuted
+
+except NoLightsFoundError:
+    print("No MuteMe devices found")
+```
+
+## Task Management
+
+### Periodic Tasks (Non-Asyncio)
+
+```python
+import time
+from busylight_core import Light, NoLightsFoundError
+
+try:
+    light = Light.first_light()
+
+    # Task function receives the light instance
+    def pulse(light):
+        if light.is_lit:
+            light.off()
+        else:
+            light.on((0, 128, 255))
+
+    # Start periodic task (uses threading.Timer automatically)
+    light.add_task("pulse", pulse, interval=0.5)
+    time.sleep(5)
+    light.cancel_task("pulse")
+    light.off()
+
+except NoLightsFoundError:
+    print("No lights found")
+```
+
+### Periodic Tasks (Asyncio)
 
 ```python
 import asyncio
 from busylight_core import Light, NoLightsFoundError
 
-try:
-    light = Light.first_light()
-    
-    # Use the built-in TaskableMixin for animations
-    async def pulse_animation():
-        """Custom pulse animation"""
-        for _ in range(10):
-            light.on((255, 0, 0))
-            await asyncio.sleep(0.5)
-            light.off()
-            await asyncio.sleep(0.5)
-    
-    # Add and manage tasks
-    task = light.add_task("pulse", pulse_animation)
-    print(f"Started task: {task}")
-    
-    # Cancel task later
-    light.cancel_task("pulse")
-    
-    # Cancel all tasks
-    light.cancel_tasks()
-    
-except NoLightsFoundError:
-    print("No lights found")
-```
+async def main():
+    try:
+        light = Light.first_light()
 
+        async def color_cycle(light):
+            colors = [(255,0,0), (0,255,0), (0,0,255)]
+            for color in colors:
+                light.on(color)
+                await asyncio.sleep(0.3)
 
-## Device-Specific Features
+        # In asyncio context, automatically uses asyncio.Task
+        light.add_task("cycle", color_cycle, interval=1.0)
+        await asyncio.sleep(10)
+        light.cancel_tasks()
+        light.off()
 
-### Button Input Handling
+    except NoLightsFoundError:
+        print("No lights found")
 
-```python
-from busylight_core import MuteMe, Luxafor
-
-# For devices with button input (MuteMe, Luxafor Mute)
-devices_with_buttons = []
-for light in Light.available():
-    if isinstance(light, (MuteMe, Luxafor)) and hasattr(light, 'button_pressed'):
-        devices_with_buttons.append(light)
-
-if devices_with_buttons:
-    device = devices_with_buttons[0]
-    
-    # Check button state
-    if device.button_pressed():
-        print("Button is currently pressed")
-        device.on((255, 0, 0))  # Red when pressed
-    else:
-        device.on((0, 255, 0))  # Green when not pressed
-```
-
-### Vendor-Specific Optimizations
-
-```python
-from busylight_core import Light, Kuando
-
-# Some devices have vendor-specific features
-for light in Light.available():
-    if isinstance(light, Kuando):
-        # Kuando devices support keepalive
-        light.keepalive()
-    
-    # Check device capabilities
-    if hasattr(light, 'dim'):
-        light.dim()  # Dim the light
-    
-    if hasattr(light, 'bright'):
-        light.bright()  # Brighten the light
+asyncio.run(main())
 ```
 
 ## Error Handling and Debugging
@@ -191,12 +264,8 @@ for light in Light.available():
 from busylight_core import Light, LightUnavailableError, NoLightsFoundError
 
 try:
-    # Try to get a light
     light = Light.first_light()
-    
-    # Try to control the light
     light.on((255, 0, 0))
-    
 except NoLightsFoundError:
     print("No busylights found. Please connect a device.")
 except LightUnavailableError as error:
@@ -208,11 +277,11 @@ except Exception as error:
 ### Debugging Device Issues
 
 ```python
-import logging
+from loguru import logger
 from busylight_core import Light, Hardware
 
 # Enable debug logging
-logging.basicConfig(level=logging.DEBUG)
+logger.enable("busylight_core")
 
 # Check hardware detection
 hardware_devices = Hardware.enumerate()
@@ -229,13 +298,13 @@ print(f"Recognized {len(lights)} as lights:")
 
 for light in lights:
     print(f"  {light.vendor()} {light.name}")
-    print(f"    Claimed by: {light.__class__.__name__}")
-```
+    print(f"    Class: {light.__class__.__name__}")
 
+logger.disable("busylight_core")
+```
 
 ## Next Steps
 
 - Learn more about the [API Reference](../reference/index.md)
 - Check out [Device Capabilities](device-capabilities.md) for device-specific features
 - Read the [Contributing Guide](../contributing.md) to add support for new devices
-- Visit the [GitHub repository](https://github.com/JnyJny/busylight_core) for the latest updates
