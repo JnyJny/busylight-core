@@ -1,168 +1,363 @@
 # Contributing
 
-We welcome contributions to Busylight Core for Humans! This guide will help you get started.
+We welcome contributions to busylight-core! This guide will help you get
+started with development, testing, and submitting changes.
+
+We have issues labeled as [Good First Issue][good-first-issue] and
+[Help Wanted][help-wanted] which are good opportunities for new
+contributors.
 
 ## Development Setup
 
-1. Fork the repository on GitHub
-2. Clone your fork locally:
+### Prerequisites
 
-```bash
-git clone https://github.com/YOUR_USERNAME/busylight_core.git
-cd busylight_core
-```
+- Python 3.11+ 
+- [uv][astra-uv] for dependency management
+- Git for version control
+- Optional: [direnv][direnv] for automatic environment activation
 
-3. Install dependencies using `uv`:
+### Initial Setup
 
-```bash
-uv sync
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/JnyJny/busylight-core.git
+   cd busylight-core
+   ```
+
+2. **Install dependencies and create virtual environment:**
+   ```bash
+   uv sync --all-groups
+   ```
+
+3. **Optional: Enable direnv for automatic environment activation:**
+   ```bash
+   direnv allow
+   ```
+
+4. **Verify installation:**
+   ```bash
+   uv run poe test
+   ```
 
 ## Development Workflow
 
-### Code Quality
+### Available Commands
 
-We use several tools to maintain code quality:
+The project uses [Poe the Poet][poe-the-poet]  for task
+automation. Run `poe` without arguments to see all available tasks:
 
-```bash
-# Run all code quality checks
-uv run poe check
+**Code Quality:**
+- `poe test` - Run test suite with pytest
+- `poe ruff-check` - Run ruff linting checks
+- `poe ruff-format` - Format code with ruff
+- `poe ruff` - Run both check and format
+- `poe coverage` - Generate and open HTML coverage report
 
-# Or run individual tools
-uv run poe ruff      # Linting and formatting
-```
+**Development:**
+- `poe docs-serve` - Serve documentation locally for development
+- `poe docs-build` - Build documentation
+- `poe clean` - Remove build artifacts and cache files
 
-### Testing
+### Making Changes
 
-Run the test suite:
+1. **Create a feature branch:**
+   ```bash
+   git checkout -b features/your-feature-name
+   ```
 
-```bash
-uv run poe test
-```
+2. **Make your changes** following the project conventions
 
-Run tests with coverage:
+3. **Run quality checks:**
+   ```bash
+   poe ruff        # Format and lint code
+   poe test        # Run tests
+   poe coverage    # Check test coverage
+   ```
 
-```bash
-uv run poe coverage
-```
+4. **Commit your changes** using conventional commit format (see below)
 
-### Documentation
+5. **Push and create a pull request**
 
-Build and serve the documentation locally:
+## Testing
 
-```bash
-uv run mkdocs serve
-```
+### Running Tests
 
-The documentation will be available at `http://localhost:8000`.
-
-## Making Changes
-
-1. Create a new branch for your feature or bugfix:
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. Make your changes, ensuring you:
-   - Follow the existing code style
-   - Add tests for new functionality
-   - Update documentation as needed
-   - Keep commits focused and well-described
-
-3. Run the full test suite:
+The project uses pytest with coverage reporting:
 
 ```bash
-uv run poe qc
+# Run unit tests
+poe test
+
+# Run doc tests (validates all Python code blocks in docs/)
+uv run pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py
+
+# Run tests with coverage report
+poe coverage
+
+# Run specific test file
+uv run pytest tests/test_specific.py
+
+# Run tests with verbose output
+uv run pytest -v
 ```
 
-4. Commit your changes:
+### Test Structure
 
+- `tests/` - Main test directory
+- `tests/vendor_examples/` - Vendor-specific test examples
+- Tests follow the naming convention `test_*.py`
+- Mock hardware devices are used for testing (no real hardware required)
+
+### Doc Tests
+
+All Python code blocks in `docs/` are automatically tested using
+[pytest-markdown-docs][pytest-markdown-docs]. This catches hallucinated
+or outdated API examples before they ship.
+
+- Every fenced Python code block is executed during CI
+- USB hardware is mocked via `docs/conftest.py` (no devices needed)
+- If a block depends on imports from the previous block, use:
+  `` ```python continuation ``
+- To exclude a block from testing: `` ```python notest ``
+- CI runs doc tests on every PR, push to main, and release
+
+### Writing Tests
+
+When adding new features:
+
+1. **Create tests first** (TDD approach encouraged)
+2. **Aim for >90% test coverage** for production code
+3. **Test both success and error cases**
+4. **Use descriptive test names** that explain the behavior being tested
+5. **Mock hardware dependencies** - tests should not require real devices
+6. **Update doc examples** - if you change an API, update the docs and
+   the doc tests will catch any mismatches
+
+Example test structure:
+```python
+def test_device_on_method_sets_color(self, mock_device) -> None:
+    """Test that on() method properly sets device color."""
+    mock_device.on((255, 0, 0))
+    
+    assert mock_device.color == (255, 0, 0)
+```
+
+## Architecture Overview
+
+### Core Components
+
+**busylight-core** provides a unified interface for controlling USB-connected
+status lights through a plugin-style architecture:
+
+1. **Light** (src/busylight_core/light.py) - Abstract base class for all devices
+2. **Hardware** (src/busylight_core/hardware.py) - Hardware detection and connection
+3. **Vendor implementations** (src/busylight_core/vendors/) - Device-specific classes
+4. **Mixins** (src/busylight_core/mixins/) - Shared functionality (ColorableMixin, TaskableMixin)
+
+### Adding Device Support
+
+To add support for a new device:
+
+1. **Create or use existing vendor package** in `src/busylight_core/vendors/`
+2. **Implement Light subclass** with required abstract methods:
+   - `__bytes__()` - Device protocol serialization
+   - `on()` - Turn on with color
+   - `color` property - Get/set current color
+3. **Define supported_device_ids** with vendor/product ID mappings
+4. **Import in vendor's __init__.py** and add to `__all__`
+5. **Import in main __init__.py** and add to main `__all__`
+6. **Add comprehensive tests** following existing patterns
+
+### Key Design Principles
+
+- **Device-specific classes** enable type safety and plugin discovery
+- **Minimal code duplication** (~5-10% is acceptable for hardware abstraction)
+- **Clear inheritance hierarchies** with vendor base classes
+- **Comprehensive test coverage** with mocked hardware
+
+## Commit Message Format
+
+This project uses conventional commits for automatic changelog generation.
+Use these prefixes in your commit messages:
+
+- **feat:** New features and capabilities
+- **fix:** Bug fixes and corrections  
+- **docs:** Documentation updates
+- **refactor:** Code restructuring without behavior changes
+- **perf:** Performance improvements
+- **test:** Test additions or modifications
+
+**Examples:**
 ```bash
-git add .
-git commit -m "Add your descriptive commit message"
+feat: add support for NewVendor SuperLight device
+fix: resolve color parsing issue in Blynclight
+docs: update contributing guidelines for new developers
+refactor: simplify vendor base class hierarchy
+perf: optimize Word.__str__ BitField introspection
+test: add comprehensive tests for multi-LED devices
 ```
 
-5. Push to your fork:
-
-```bash
-git push origin feature/your-feature-name
+**Commit format:**
 ```
+<type>: <description>
 
-6. Create a Pull Request on GitHub
+[optional body]
+
+[optional footer]
+```
 
 ## Code Style
 
-- We use `ruff` for linting and formatting
-- Follow PEP 8 guidelines
-- Use type hints for all functions and methods
-- Write docstrings for all public functions and classes
-- Keep functions focused and reasonably sized
+### Formatting and Linting
 
-## Testing Guidelines
+The project uses [ruff][astral-ruff] for code formatting and linting:
 
-- Write tests for all new functionality
-- Use descriptive test names
-- Test both positive and negative cases
-- Use fixtures for common test data
-- Mock external dependencies
+- **Line length:** 80 characters for markdown, flexible for code
+- **Docstrings:** Sphinx reStructuredText format with single-line summary
+- **Type hints:** Required for all public APIs
+- **Import sorting:** Automatic via ruff
+
+### Code Conventions
+
+- **Descriptive variable names** that explain purpose, not implementation
+- **No comments** - prefer clear code and comprehensive docstrings
+- **Exception handling:** Use descriptive variable names (`error` not `e`)
+- **Clean exceptions:** Use `contextlib.suppress` instead of `try/except/pass`
+
+### Docstring Format
+
+Use **Sphinx reStructuredText format** focusing on programmer intent rather 
+than type information (which is covered by type hints):
+
+```python
+def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    """Turn on the light with specified RGB color.
+
+    Sets the device to display the given color immediately. For devices
+    with multiple LEDs, use led parameter to target specific LEDs or 
+    0 for all LEDs.
+
+    :param color: RGB values from 0-255 for desired color intensity
+    :param led: Target LED index, 0 affects all LEDs
+    :raises LightUnavailableError: If device communication fails
+    """
+
+def get_colors(self) -> list[tuple[int, int, int]]:
+    """Get current colors of all LEDs.
+
+    Returns the current color state for each LED in device order.
+    Use this to save current state before making temporary changes.
+
+    :return: List of RGB tuples, one per LED in device order
+    """
+```
+
+**Key principles:**
+- **Single-line summary** describing the action or purpose
+- **Document programmer intent** - how and why other code should use this
+- **Expected inputs** - value ranges, expected content, usage patterns
+- **Actions taken** - what happens when called, side effects
+- **Exception conditions** - when might this fail and why
+- **Return value usage** - how should returned values be used
+- **Avoid type redundancy** - type hints handle type information
+- **Compact format** - use `:param name: description` rather than verbose sections
 
 ## Documentation
 
-- Update documentation for any API changes
-- Add examples for new features
-- Keep documentation clear and concise
-- Use proper markdown formatting
+### Building Documentation
 
-## Submitting Changes
-
-### Pull Request Process
-
-1. Ensure your PR description clearly describes the problem and solution
-2. Include the relevant issue number if applicable
-3. Make sure all tests pass and code quality checks pass
-4. Request review from maintainers
-5. Address any feedback promptly
-
-### Commit Messages
-
-Use clear, descriptive commit messages:
-
-```
-Add support for configuration files
-
-- Implement ConfigLoader class
-- Add tests for configuration loading
-- Update documentation with examples
-```
-
-## Release Process
-
-Releases are managed by maintainers using the following commands:
+The project uses MkDocs with the Material theme:
 
 ```bash
-# Patch release (bug fixes)
-uv run poe publish_patch
+# Serve locally for development
+poe docs-serve
 
-# Minor release (new features)
-uv run poe publish_minor
+# Build for production
+poe docs-build
 
-# Major release (breaking changes)
-uv run poe publish_major
+# Deploy to GitHub Pages (maintainers only)
+poe docs-deploy
 ```
+
+### Writing Documentation
+
+- **API documentation** is auto-generated from docstrings
+- **Guides and examples** go in the `docs/` directory
+- **Follow 80-column line width** for markdown files
+- **Use descriptive headers** and clear examples
+- **All Python code blocks are tested** - doc examples must use real
+  method names and signatures. Mock infrastructure in `docs/conftest.py`
+  handles USB hardware. Run doc tests locally before submitting.
+
+## Releases
+
+### Python Version Configuration
+
+The CI/CD test matrix uses Python versions configured in `pyproject.toml`:
+
+```toml
+[tool.busylight_core.ci]
+test-python-versions = ["3.11", "3.12", "3.13"]
+```
+
+**Benefits:**
+- Single source of truth for CI test versions
+- Automatic workflow updates when versions change
+- Graceful fallback if configuration missing
+
+**Note:** Changing these versions affects all CI/CD testing across the project.
+
+### For Maintainers
+
+Releases are handled through Poe tasks and GitHub Actions:
+
+1. **Create release:**
+   ```bash
+   poe publish_patch   # 0.1.0 → 0.1.1
+   poe publish_minor   # 0.1.1 → 0.2.0
+   poe publish_major   # 0.2.0 → 1.0.0
+   ```
+
+2. **Automated CI/CD pipeline:**
+   - Version bump in pyproject.toml
+   - Git commit, tag, and push
+   - GitHub Actions: `get-python-versions` → `test` → `build` → [`publish`, `github-release`] → `docs`
+   - Parallel execution: PyPI publishing and GitHub release creation run simultaneously
+   - Documentation deployment: Only triggered after successful releases
+   <!-- add a mermaid diagram here for the ci/cd pipline -->
+
+### Changelog
+
+The CHANGELOG.md is automatically updated using conventional commits:
+- **Features** from `feat:` commits
+- **Bug Fixes** from `fix:` and `bug:` commits  
+- **Documentation** from `docs:` commits
+- **Refactoring** from `refactor:` commits
+- **Performance** from `perf:` commits
 
 ## Getting Help
 
-- Create an issue on GitHub for bugs or feature requests
-- Join discussions in existing issues
-- Reach out to maintainers for guidance
+- **GitHub Discussions:** Ask questions and share ideas
+- **Issues:** Report bugs or request features
+- **Code Review:** All PRs receive thorough review and feedback
 
 ## Code of Conduct
 
-Please be respectful and constructive in all interactions. We want to maintain a welcoming environment for all contributors.
+We are committed to providing a welcoming and inclusive environment for all
+contributors. Please be respectful and constructive in all interactions.
 
-## License
+## Questions?
 
-By contributing to Busylight Core for Humans, you agree that your contributions will be licensed under the same license as the project.
+Don't hesitate to ask questions! Create an issue or discussion, and we'll
+help you get started. New contributors are always welcome, and we're happy
+to provide guidance on getting familiar with the codebase.
 
-Thank you for contributing to Busylight Core for Humans!
+<!-- End Links -->
+
+[astral-ruff]: https://docs.astral.sh/ruff
+[astral-uv]: https://docs.astral.sh/uv
+[direnv]: https://direnv.net/
+[good-first-issue]: https://github.com/JnyJny/busylight_core/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
+[help-wanted]: https://github.com/JnyJny/busylight_core/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
+[poe-the-poet]: https://poethepoet.natn.io
+[pytest-markdown-docs]: https://github.com/modal-labs/pytest-markdown-docs

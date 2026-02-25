@@ -55,9 +55,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      - name: Run tests - ${{ matrix.python-version }} - ${{ matrix.os }}        
-        run: |
-          uv run --all-extras pytest
+      - name: Run unit tests - ${{ matrix.python-version }} - ${{ matrix.os }}        
+        run: uv run --all-extras pytest tests/
+
+      - name: Run doc tests - ${{ matrix.python-version }} - ${{ matrix.os }}
+        run: uv run --all-extras pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py
 
   build:
     name: Build Package

@@ -85,8 +85,11 @@ automation. Run `poe` without arguments to see all available tasks:
 The project uses pytest with coverage reporting:
 
 ```bash
-# Run all tests
+# Run unit tests
 poe test
+
+# Run doc tests (validates all Python code blocks in docs/)
+uv run pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py
 
 # Run tests with coverage report
 poe coverage
@@ -105,6 +108,19 @@ uv run pytest -v
 - Tests follow the naming convention `test_*.py`
 - Mock hardware devices are used for testing (no real hardware required)
 
+### Doc Tests
+
+All Python code blocks in `docs/` are automatically tested using
+[pytest-markdown-docs][pytest-markdown-docs]. This catches hallucinated
+or outdated API examples before they ship.
+
+- Every fenced Python code block is executed during CI
+- USB hardware is mocked via `docs/conftest.py` (no devices needed)
+- If a block depends on imports from the previous block, use:
+  `` ```python continuation ``
+- To exclude a block from testing: `` ```python notest ``
+- CI runs doc tests on every PR, push to main, and release
+
 ### Writing Tests
 
 When adding new features:
@@ -114,6 +130,8 @@ When adding new features:
 3. **Test both success and error cases**
 4. **Use descriptive test names** that explain the behavior being tested
 5. **Mock hardware dependencies** - tests should not require real devices
+6. **Update doc examples** - if you change an API, update the docs and
+   the doc tests will catch any mismatches
 
 Example test structure:
 ```python
@@ -267,6 +285,9 @@ poe docs-deploy
 - **Guides and examples** go in the `docs/` directory
 - **Follow 80-column line width** for markdown files
 - **Use descriptive headers** and clear examples
+- **All Python code blocks are tested** - doc examples must use real
+  method names and signatures. Mock infrastructure in `docs/conftest.py`
+  handles USB hardware. Run doc tests locally before submitting.
 
 ## Releases
 
@@ -339,3 +360,4 @@ to provide guidance on getting familiar with the codebase.
 [good-first-issue]: https://github.com/JnyJny/busylight_core/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
 [help-wanted]: https://github.com/JnyJny/busylight_core/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
 [poe-the-poet]: https://poethepoet.natn.io
+[pytest-markdown-docs]: https://github.com/modal-labs/pytest-markdown-docs
