@@ -4,7 +4,7 @@ Python library for controlling USB status lights from various vendors using a pl
 
 ## Commands
 - `poe test` - Run unit tests
-- `uv run pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py` - Run doc tests
+- `poe doc-test` - Run doc tests (validates Python code blocks in docs/)
 - `poe ruff` - Format and lint
 - `poe coverage` - Coverage report
 - `poe docs-serve` - Serve docs locally

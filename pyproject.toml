@@ -74,10 +74,13 @@ ruff.help = "[Code Quality] Run Ruff check and format on source."
 check.sequence = [ "ruff", ]
 check.help = "[Code Quality] Run all code quality tools on source."
 
-test.cmd = "pytest"
-test.help = "[Code Quality] Runs testing suites using pytest."
+test.cmd = "pytest tests/"
+test.help = "[Code Quality] Run unit tests."
 
-qc.sequence = [ "test", "check", ]
+doc-test.cmd = "pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py"
+doc-test.help = "[Code Quality] Run doc tests (validates Python code blocks in docs/)."
+
+qc.sequence = [ "test", "doc-test", "check", ]
 qc.help = "[Code Quality] Run all code quality tasks."
 
 # Publish tasks

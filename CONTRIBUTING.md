@@ -89,7 +89,7 @@ The project uses pytest with coverage reporting:
 poe test
 
 # Run doc tests (validates all Python code blocks in docs/)
-uv run pytest --markdown-docs docs/ --ignore=docs/gen_ref_pages.py
+poe doc-test
 
 # Run tests with coverage report
 poe coverage
