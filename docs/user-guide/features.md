@@ -24,7 +24,7 @@ print(f"Recognized {len(lights)} busylights")
 
 Get detailed information about connected devices:
 
-```python
+```python continuation
 for light in Light.all_lights():
     print(f"Vendor: {light.vendor()}")
     print(f"Model: {light.name}")
@@ -39,7 +39,7 @@ for light in Light.all_lights():
 
 Busylight Core uses RGB color tuples with integer values from 0-255:
 
-```python
+```python continuation
 try:
     light = Light.first_light()
 
