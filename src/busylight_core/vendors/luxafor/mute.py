@@ -41,7 +41,10 @@ class Mute(Flag):
 
         results = self.read_strategy(8, 200)
 
-        if results and results[0] == 131:
-            return bool(results[1])
+        try:
+            if results[0] == 131:
+                return bool(results[1])
+        except IndexError:
+            pass
 
         return False
