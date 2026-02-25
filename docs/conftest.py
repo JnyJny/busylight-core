@@ -4,6 +4,7 @@ Provides mock light infrastructure so doc code examples can run
 without physical USB hardware connected.
 """
 
+import atexit
 from unittest.mock import Mock, patch
 
 import busylight_core
@@ -11,7 +12,7 @@ from busylight_core.hardware import ConnectionType, Hardware
 from busylight_core.light import Light
 
 
-def _make_mock_hardware(vendor_id=0x2C0D, product_id=0x0001, name="MockLight"):
+def make_mock_hardware(vendor_id=0x2C0D, product_id=0x0001, name="MockLight"):
     """Create a mock Hardware instance."""
     hw = Mock(spec=Hardware)
     hw.device_id = (vendor_id, product_id)
@@ -39,29 +40,29 @@ class StatefulMockLight:
 
     def __init__(self, name="MockLight", vendor_name="Mock"):
         self.name = name
-        self._vendor_name = vendor_name
+        self.vendor_name = vendor_name
         self.color = (0, 0, 0)
-        self._is_lit = False
-        self.hardware = _make_mock_hardware(name=name)
+        self.lit = False
+        self.hardware = make_mock_hardware(name=name)
         self.path = "/dev/mock0"
-        self._is_button = False
-        self._button_on = False
-        self._tasks = {}
+        self.has_button = False
+        self.button_pressed = False
+        self.tasks = {}
 
     def vendor(self):
-        return self._vendor_name
+        return self.vendor_name
 
     def on(self, color, led=0):
         self.color = color
-        self._is_lit = True
+        self.lit = True
 
     def off(self):
         self.color = (0, 0, 0)
-        self._is_lit = False
+        self.lit = False
 
     @property
     def is_lit(self):
-        return self._is_lit
+        return self.lit
 
     def reset(self):
         self.off()
@@ -78,7 +79,7 @@ class StatefulMockLight:
 
     def flash(self, color, speed=None):
         self.color = color
-        self._is_lit = True
+        self.lit = True
 
     def stop_flashing(self):
         pass
@@ -99,69 +100,72 @@ class StatefulMockLight:
     # Button devices
     @property
     def is_button(self):
-        return self._is_button
+        return self.has_button
 
     @property
     def button_on(self):
-        return self._button_on
+        return self.button_pressed
 
     # Task management
     def add_task(self, name, func, interval=1.0):
-        self._tasks[name] = func
+        self.tasks[name] = func
 
     def cancel_task(self, name):
-        self._tasks.pop(name, None)
+        self.tasks.pop(name, None)
 
     def cancel_tasks(self):
-        self._tasks.clear()
+        self.tasks.clear()
 
 
-def _make_light(name="MockLight", vendor="Mock", button=False):
+def make_light(name="MockLight", vendor="Mock", button=False):
+    """Create a StatefulMockLight, optionally with button support."""
     light = StatefulMockLight(name=name, vendor_name=vendor)
     if button:
-        light._is_button = True
-        light._button_on = True
+        light.has_button = True
+        light.button_pressed = True
     return light
 
 
-def _mock_first_light(name="MockLight", vendor="Mock", button=False):
+def mock_first_light(name="MockLight", vendor="Mock", button=False):
+    """Return a factory that produces a single mock light."""
+
     def first_light(*args, **kwargs):
-        return _make_light(name=name, vendor=vendor, button=button)
+        return make_light(name=name, vendor=vendor, button=button)
 
     return first_light
 
 
-def _mock_all_lights(name="MockLight", vendor="Mock", count=1, button=False):
+def mock_all_lights(name="MockLight", vendor="Mock", count=1, button=False):
+    """Return a factory that produces a list of mock lights."""
+
     def all_lights(*args, **kwargs):
         return [
-            _make_light(name=name, vendor=vendor, button=button) for _ in range(count)
+            make_light(name=name, vendor=vendor, button=button) for _ in range(count)
         ]
 
     return all_lights
 
 
 # Build patchers that stay active for all doc tests
-_patches = []
+patches = []
 
 
-def _setup_patches():
-    """Create all patches for doc testing."""
-    global _patches
-
+def setup_patches():
+    """Create and start all patches for doc testing."""
     # Core Light class
-    _patches.append(patch.object(Light, "first_light", side_effect=_mock_first_light()))
-    _patches.append(
-        patch.object(Light, "all_lights", side_effect=_mock_all_lights(count=2))
+    patches.append(patch.object(Light, "first_light", side_effect=mock_first_light()))
+    patches.append(
+        patch.object(Light, "all_lights", side_effect=mock_all_lights(count=2))
     )
 
     # Hardware.enumerate
-    _patches.append(
+    patches.append(
         patch.object(
             Hardware,
             "enumerate",
             return_value=[
-                _make_mock_hardware(),
-                _make_mock_hardware(
+                make_mock_hardware(),
+                make_mock_hardware(
                     vendor_id=0x27B8, product_id=0x01ED, name="blink(1)"
                 ),
             ],
@@ -194,20 +198,20 @@ def _setup_patches():
         if cls is None:
             continue
         btn = cfg.get("button", False)
-        _patches.append(
+        patches.append(
             patch.object(
                 cls,
                 "first_light",
-                side_effect=_mock_first_light(
+                side_effect=mock_first_light(
                     name=cfg["name"], vendor=cfg["vendor"], button=btn
                 ),
             )
         )
-        _patches.append(
+        patches.append(
             patch.object(
                 cls,
                 "all_lights",
-                side_effect=_mock_all_lights(
+                side_effect=mock_all_lights(
                     name=cfg["name"], vendor=cfg["vendor"], button=btn
                 ),
             )
@@ -216,43 +220,40 @@ def _setup_patches():
     # Luxafor Mute (imported from submodule)
     from busylight_core.vendors.luxafor import Mute
 
-    _patches.append(
+    patches.append(
         patch.object(
             Mute,
             "first_light",
-            side_effect=_mock_first_light(name="Mute", vendor="Luxafor", button=True),
+            side_effect=mock_first_light(name="Mute", vendor="Luxafor", button=True),
         )
     )
-    _patches.append(
+    patches.append(
         patch.object(
             Mute,
             "all_lights",
-            side_effect=_mock_all_lights(name="Mute", vendor="Luxafor", button=True),
+            side_effect=mock_all_lights(name="Mute", vendor="Luxafor", button=True),
         )
     )
 
     # Start all patches
-    for p in _patches:
+    for p in patches:
         p.start()
 
 
-def _teardown_patches():
-    for p in _patches:
+def teardown_patches():
+    """Stop all patches and clear the list."""
+    for p in patches:
         p.stop()
-    _patches.clear()
+    patches.clear()
 
 
 # Start patches at import time (pytest-markdown-docs imports conftest once)
-_setup_patches()
-
-import atexit
-
-atexit.register(_teardown_patches)
+setup_patches()
+atexit.register(teardown_patches)
 
 
 def pytest_markdown_docs_globals():
     """Inject globals available to all markdown code blocks."""
-
     return {
         # These are injected but most blocks do their own imports.
         # Having them here handles any blocks that rely on prior context.
