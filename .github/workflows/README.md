@@ -15,6 +15,26 @@ test (matrix) → build → [publish, github-release] (parallel) → docs
 
 ## Workflows
 
+### ci.yml
+Continuous integration for every push to main and every PR targeting main.
+
+**Jobs:**
+1. **test** - Matrix testing (Ubuntu, macOS, Windows x Python versions):
+   - Unit tests: `pytest tests/`
+   - Doc tests: `pytest --markdown-docs docs/` (validates all Python code blocks in documentation against the real API using mock USB hardware from `docs/conftest.py`)
+2. **lint** - Ruff check and format verification
+
+**CI coverage by scenario:**
+
+| Scenario | Workflow | Unit Tests | Doc Tests | Timing |
+|----------|----------|-----------|-----------|--------|
+| Push to main | ci.yml | Yes | Yes | Post-hoc |
+| PR to main | ci.yml | Yes | Yes | Pre-merge (gate with branch protection) |
+| Tag push (release) | release.yaml | Yes | Yes | Pre-publish |
+| Push to testing | release.yaml | Yes | Yes | Post-hoc |
+
+**Note:** For PRs, CI results are advisory unless branch protection is enabled on main with required status checks. With branch protection, failing doc tests block the merge.
+
 ### release.yaml
 Main CI/CD pipeline triggered on version tags (e.g., `v1.2.3`).
 

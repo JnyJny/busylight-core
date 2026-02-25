@@ -3,7 +3,8 @@
 Python library for controlling USB status lights from various vendors using a plugin architecture.
 
 ## Commands
-- `poe test` - Run tests
+- `poe test` - Run unit tests
+- `poe doc-test` - Run doc tests (validates Python code blocks in docs/)
 - `poe ruff` - Format and lint
 - `poe coverage` - Coverage report
 - `poe docs-serve` - Serve docs locally
@@ -52,3 +53,9 @@ def method(self, param: str) -> bool:
 **Patterns**: Three device types - simple (ColorableMixin), complex (Word/BitField), multi-LED (arrays). Preserve these patterns.
 
 **Quality**: Run `poe ruff` before commits.
+
+## Doc Tests
+All Python code blocks in `docs/` are tested via pytest-markdown-docs.
+Mock USB hardware lives in `docs/conftest.py`. If you change any public API,
+update the doc examples -- CI will catch mismatches. Use `continuation` marker
+for blocks that depend on prior imports, `notest` for untestable blocks.
