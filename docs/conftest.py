@@ -4,13 +4,11 @@ Provides mock light infrastructure so doc code examples can run
 without physical USB hardware connected.
 """
 
-from unittest.mock import Mock, patch, PropertyMock
-from typing import ClassVar
+from unittest.mock import Mock, patch
 
 import busylight_core
 from busylight_core.hardware import ConnectionType, Hardware
 from busylight_core.light import Light
-from busylight_core.mixins import ColorableMixin
 
 
 def _make_mock_hardware(vendor_id=0x2C0D, product_id=0x0001, name="MockLight"):
@@ -129,12 +127,16 @@ def _make_light(name="MockLight", vendor="Mock", button=False):
 def _mock_first_light(name="MockLight", vendor="Mock", button=False):
     def first_light(*args, **kwargs):
         return _make_light(name=name, vendor=vendor, button=button)
+
     return first_light
 
 
 def _mock_all_lights(name="MockLight", vendor="Mock", count=1, button=False):
     def all_lights(*args, **kwargs):
-        return [_make_light(name=name, vendor=vendor, button=button) for _ in range(count)]
+        return [
+            _make_light(name=name, vendor=vendor, button=button) for _ in range(count)
+        ]
+
     return all_lights
 
 
@@ -148,13 +150,23 @@ def _setup_patches():
 
     # Core Light class
     _patches.append(patch.object(Light, "first_light", side_effect=_mock_first_light()))
-    _patches.append(patch.object(Light, "all_lights", side_effect=_mock_all_lights(count=2)))
+    _patches.append(
+        patch.object(Light, "all_lights", side_effect=_mock_all_lights(count=2))
+    )
 
     # Hardware.enumerate
-    _patches.append(patch.object(
-        Hardware, "enumerate",
-        return_value=[_make_mock_hardware(), _make_mock_hardware(vendor_id=0x27B8, product_id=0x01ED, name="blink(1)")]
-    ))
+    _patches.append(
+        patch.object(
+            Hardware,
+            "enumerate",
+            return_value=[
+                _make_mock_hardware(),
+                _make_mock_hardware(
+                    vendor_id=0x27B8, product_id=0x01ED, name="blink(1)"
+                ),
+            ],
+        )
+    )
 
     # Vendor-specific classes - patch first_light and all_lights on each
     vendor_configs = {
@@ -182,25 +194,42 @@ def _setup_patches():
         if cls is None:
             continue
         btn = cfg.get("button", False)
-        _patches.append(patch.object(
-            cls, "first_light",
-            side_effect=_mock_first_light(name=cfg["name"], vendor=cfg["vendor"], button=btn)
-        ))
-        _patches.append(patch.object(
-            cls, "all_lights",
-            side_effect=_mock_all_lights(name=cfg["name"], vendor=cfg["vendor"], button=btn)
-        ))
+        _patches.append(
+            patch.object(
+                cls,
+                "first_light",
+                side_effect=_mock_first_light(
+                    name=cfg["name"], vendor=cfg["vendor"], button=btn
+                ),
+            )
+        )
+        _patches.append(
+            patch.object(
+                cls,
+                "all_lights",
+                side_effect=_mock_all_lights(
+                    name=cfg["name"], vendor=cfg["vendor"], button=btn
+                ),
+            )
+        )
 
     # Luxafor Mute (imported from submodule)
     from busylight_core.vendors.luxafor import Mute
-    _patches.append(patch.object(
-        Mute, "first_light",
-        side_effect=_mock_first_light(name="Mute", vendor="Luxafor", button=True)
-    ))
-    _patches.append(patch.object(
-        Mute, "all_lights",
-        side_effect=_mock_all_lights(name="Mute", vendor="Luxafor", button=True)
-    ))
+
+    _patches.append(
+        patch.object(
+            Mute,
+            "first_light",
+            side_effect=_mock_first_light(name="Mute", vendor="Luxafor", button=True),
+        )
+    )
+    _patches.append(
+        patch.object(
+            Mute,
+            "all_lights",
+            side_effect=_mock_all_lights(name="Mute", vendor="Luxafor", button=True),
+        )
+    )
 
     # Start all patches
     for p in _patches:
@@ -217,12 +246,12 @@ def _teardown_patches():
 _setup_patches()
 
 import atexit
+
 atexit.register(_teardown_patches)
 
 
 def pytest_markdown_docs_globals():
     """Inject globals available to all markdown code blocks."""
-    from busylight_core.vendors.embrava.implementation import FlashSpeed
 
     return {
         # These are injected but most blocks do their own imports.

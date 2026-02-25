@@ -144,7 +144,6 @@ def test_implementation_classmethod_first_light(subclass) -> None:
 @pytest.mark.parametrize("subclass", VENDOR_SUBCLASSES)
 def test_implementation_classmethod_first_light_filtered_false(subclass) -> None:
     """Test first_light() with filters raises NoLightsFoundError when no match."""
-
     result = subclass.first_light(
         reset=False,
         exclusive=False,
@@ -167,7 +166,6 @@ def test_implementation_classmethod_first_light_filtered_false(subclass) -> None
 @pytest.mark.parametrize("subclass", VENDOR_SUBCLASSES)
 def test_implementation_classmethod_at_path_dne(subclass) -> None:
     """Test that at_path() raises NoLightsFoundError for an invalid path."""
-
     with pytest.raises(NoLightsFoundError):
         result = subclass.at_path("Not A Path")
 
@@ -176,7 +174,6 @@ def test_implementation_classmethod_at_path_dne(subclass) -> None:
 @pytest.mark.parametrize("subclass", VENDOR_SUBCLASSES)
 def test_implementation_classmethod_at_path_exists(subclass) -> None:
     """Test that at_path() returns a light instance for valid path."""
-
     result = subclass.at_path("/BOGUS/PATH")
     assert isinstance(result, subclass)
     assert result.hardware.path == b"/BOGUS/PATH"

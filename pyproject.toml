@@ -204,7 +204,21 @@ lint.ignore = [
   # line-too-long (E501)
   "E501",
   # use-of-assert (S101)
-  "S101"
+  "S101",
+  # unused-lambda-argument (ARG005)
+  "ARG005",
+  # redefined-while-unused (F811)
+  "F811",
+  # local-variable-is-assigned-but-never-used (F841)
+  "F841",
+]
+"docs/conftest.py" = [
+  # Test infrastructure: relax annotation, docstring, and style rules
+  "ANN", "D", "E501", "INP001", "SLF001", "ARG001", "PLW0602",
+  "PLC0415", "E402",
+]
+"docs/gen_ref_pages.py" = [
+  "INP001", "E501", "B007",
 ]
 "**/implementation/*" = [
   # missing-docstring-in-init (D107)
