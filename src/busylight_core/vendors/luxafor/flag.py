@@ -44,12 +44,17 @@ class Flag(LuxaforBase):
 
         :param color: RGB color tuple (red, green, blue)
         """
+        try:
+            leds = LEDS(led)
+        except ValueError:
+            leds = LEDS.All
+
         with self.batch_update():
             self.color = color
             try:
-                self.state.leds = LEDS(led)
+                self.state.leds = leds
             except ValueError:
-                self.state.leds = LEDS.All
+                self.state.leds = leds
 
     @property
     def color(self) -> tuple[int, int, int]:
