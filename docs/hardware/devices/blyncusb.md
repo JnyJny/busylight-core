@@ -98,7 +98,7 @@ To set a color, two commands must be sent in sequence:
 1. **Reset/Prepare Command**: Send control code `0x73`
 2. **Color Command**: Send the TENX20 color code from the table above
 
-```text
+```python
 # Example: Set light to RED
 buffer = bytes([0x00, 0x73] + [0] * 63)  # Step 1: Reset
 device.write(buffer)
