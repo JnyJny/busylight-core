@@ -39,6 +39,7 @@ from .vendors.agile_innovative import (
     BlinkStickSquare,
     BlinkStickStrip,
 )
+from .vendors.blyncusb import Blyncusb10, Blyncusb20, BlyncusbLights
 from .vendors.compulab import CompuLabLights, FitStatUSB
 from .vendors.embrava import Blynclight, BlynclightMini, BlynclightPlus, EmbravaLights
 from .vendors.epos import Busylight, EPOSLights
@@ -63,6 +64,9 @@ __all__ = [
     "Blynclight",
     "BlynclightMini",
     "BlynclightPlus",
+    "Blyncusb10",
+    "Blyncusb20",
+    "BlyncusbLights",
     "BusyTag",
     "Busylight",
     "BusylightAlpha",
