@@ -49,15 +49,6 @@ class Blyncusb20(BlyncusbBase):
     RESET_CODE: ClassVar[int] = 0x73
     BUFFER_SIZE: ClassVar[int] = 65
 
-    @staticmethod
-    def _make_command(code: int) -> bytes:
-        """Create a 65-byte command buffer with the given control code.
-
-        :param code: The control code byte
-        :return: 65-byte command buffer
-        """
-        return bytes([0x00, code] + [0x00] * 63)
-
     def __bytes__(self) -> bytes:
         """Return the color command as bytes for USB communication.
 
@@ -65,7 +56,7 @@ class Blyncusb20(BlyncusbBase):
         command (step 1) is handled by write_strategy.
         """
         tenx20_color = BLYNCUSB_TO_TENX20.get(self._current_color, Tenx20Color.OFF)
-        return self._make_command(tenx20_color)
+        return bytes([0x00, tenx20_color] + [0x00] * 63)
 
     @property
     def write_strategy(self) -> Callable[[bytes], None]:
@@ -76,9 +67,10 @@ class Blyncusb20(BlyncusbBase):
         implementation without overriding Light.update().
         """
         handle = self.hardware.handle
+        reset_command = bytes([0x00, self.RESET_CODE] + [0x00] * 63)
 
         def tenx20_write(color_command: bytes) -> None:
-            handle.write(self._make_command(self.RESET_CODE))
+            handle.write(reset_command)
             handle.write(color_command)
 
         return tenx20_write
