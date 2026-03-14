@@ -72,13 +72,13 @@ class TestBlyncusb10DeviceSupport:
 class TestBlyncusb10Behavior:
     """Test Blyncusb10 color and bytes behavior."""
 
-    def test_bytes_conversion(self) -> None:
-        """Verify bytes output matches expected Blyncusb10 protocol."""
+    def test_bytes_conversion_red(self) -> None:
+        """Verify bytes output for red matches expected protocol."""
         mock_hardware = create_mock_blyncusb10_hardware()
 
         with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb10, "reset"):
             device = Blyncusb10(mock_hardware)
-            device._current_color = BlyncusbColor.RED  # noqa: SLF001
+            device.color = (255, 0, 0)
 
             result = bytes(device)
 
@@ -86,8 +86,31 @@ class TestBlyncusb10Behavior:
             assert result[:7] == bytes([0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02])
             assert result[7] == (BlyncusbColor.RED.value << 4) | 0x0F
 
+    def test_bytes_conversion_off(self) -> None:
+        """Verify bytes output for off/black."""
+        mock_hardware = create_mock_blyncusb10_hardware()
+
+        with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb10, "reset"):
+            device = Blyncusb10(mock_hardware)
+            # Default color is (0, 0, 0) which maps to OFF
+
+            result = bytes(device)
+
+            assert result[7] == (BlyncusbColor.OFF.value << 4) | 0x0F
+
+    def test_color_snaps_to_palette(self) -> None:
+        """Verify setting an approximate color snaps to nearest palette entry."""
+        mock_hardware = create_mock_blyncusb10_hardware()
+
+        with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb10, "reset"):
+            device = Blyncusb10(mock_hardware)
+            device.color = (200, 50, 50)
+
+            # Should snap to pure red
+            assert device.color == (255, 0, 0)
+
     def test_color_property(self) -> None:
-        """Verify setting color updates both RGB and palette color."""
+        """Verify setting color stores the snapped palette RGB."""
         mock_hardware = create_mock_blyncusb10_hardware()
 
         with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb10, "reset"):
@@ -95,7 +118,6 @@ class TestBlyncusb10Behavior:
             device.color = (255, 0, 0)
 
             assert device.color == (255, 0, 0)
-            assert device._current_color == BlyncusbColor.RED  # noqa: SLF001
 
     def test_on_method(self) -> None:
         """Verify on() sets color and calls update."""
@@ -110,11 +132,10 @@ class TestBlyncusb10Behavior:
             device.on((0, 255, 0))
 
             assert device.color == (0, 255, 0)
-            assert device._current_color == BlyncusbColor.GREEN  # noqa: SLF001
             mock_update.assert_called_once()
 
     def test_reset_method(self) -> None:
-        """Verify reset() clears color to OFF and zeroes RGB."""
+        """Verify reset() clears color to off."""
         mock_hardware = create_mock_blyncusb10_hardware()
 
         with patch.object(mock_hardware, "acquire"):
@@ -126,8 +147,7 @@ class TestBlyncusb10Behavior:
             with patch.object(device, "update") as mock_update:
                 device.reset()
 
-            assert device._current_color == BlyncusbColor.OFF  # noqa: SLF001
-            assert device._rgb_color == (0, 0, 0)  # noqa: SLF001
+            assert device.color == (0, 0, 0)
             mock_update.assert_called_once()
 
     def test_write_strategy(self) -> None:
@@ -166,19 +186,30 @@ class TestBlyncusb20DeviceSupport:
 class TestBlyncusb20Behavior:
     """Test Blyncusb20 color and bytes behavior."""
 
-    def test_bytes_conversion(self) -> None:
-        """Verify bytes output matches expected Blyncusb20 protocol."""
+    def test_bytes_conversion_red(self) -> None:
+        """Verify bytes output for red matches expected TENX20 protocol."""
         mock_hardware = create_mock_blyncusb20_hardware()
 
         with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb20, "reset"):
             device = Blyncusb20(mock_hardware)
-            device._current_color = BlyncusbColor.RED  # noqa: SLF001
+            device.color = (255, 0, 0)
 
             result = bytes(device)
 
             assert len(result) == 65
             assert result[0] == 0x00
             assert result[1] == 0x60  # Tenx20Color.RED
+
+    def test_bytes_conversion_off(self) -> None:
+        """Verify bytes output for off/black."""
+        mock_hardware = create_mock_blyncusb20_hardware()
+
+        with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb20, "reset"):
+            device = Blyncusb20(mock_hardware)
+
+            result = bytes(device)
+
+            assert result[1] == 0x73  # Tenx20Color.OFF
 
     def test_write_strategy_two_step(self) -> None:
         """Verify Blyncusb20 write strategy sends reset then color."""
@@ -195,8 +226,18 @@ class TestBlyncusb20Behavior:
             reset_call = mock_hardware.handle.write.call_args_list[0]
             assert reset_call[0][0][1] == 0x73  # RESET_CODE
 
+    def test_color_snaps_to_palette(self) -> None:
+        """Verify setting an approximate color snaps to nearest palette entry."""
+        mock_hardware = create_mock_blyncusb20_hardware()
+
+        with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb20, "reset"):
+            device = Blyncusb20(mock_hardware)
+            device.color = (0, 0, 200)
+
+            assert device.color == (0, 0, 255)
+
     def test_color_property(self) -> None:
-        """Verify setting color updates both RGB and palette color."""
+        """Verify setting color stores the snapped palette RGB."""
         mock_hardware = create_mock_blyncusb20_hardware()
 
         with patch.object(mock_hardware, "acquire"), patch.object(Blyncusb20, "reset"):
@@ -204,7 +245,6 @@ class TestBlyncusb20Behavior:
             device.color = (0, 0, 255)
 
             assert device.color == (0, 0, 255)
-            assert device._current_color == BlyncusbColor.BLUE  # noqa: SLF001
 
     def test_on_method(self) -> None:
         """Verify on() sets color and calls update."""
@@ -219,11 +259,10 @@ class TestBlyncusb20Behavior:
             device.on((255, 255, 0))
 
             assert device.color == (255, 255, 0)
-            assert device._current_color == BlyncusbColor.YELLOW  # noqa: SLF001
             mock_update.assert_called_once()
 
     def test_reset_method(self) -> None:
-        """Verify reset() clears color to OFF and zeroes RGB."""
+        """Verify reset() clears color to off."""
         mock_hardware = create_mock_blyncusb20_hardware()
 
         with patch.object(mock_hardware, "acquire"):
@@ -235,8 +274,7 @@ class TestBlyncusb20Behavior:
             with patch.object(device, "update") as mock_update:
                 device.reset()
 
-            assert device._current_color == BlyncusbColor.OFF  # noqa: SLF001
-            assert device._rgb_color == (0, 0, 0)  # noqa: SLF001
+            assert device.color == (0, 0, 0)
             mock_update.assert_called_once()
 
 

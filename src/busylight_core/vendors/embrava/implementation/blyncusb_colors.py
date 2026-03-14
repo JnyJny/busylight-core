@@ -37,6 +37,11 @@ BLYNCUSB_COLOR_TO_RGB: dict[BlyncusbColor, tuple[int, int, int]] = {
 }
 
 
+RGB_TO_BLYNCUSB_COLOR: dict[tuple[int, int, int], BlyncusbColor] = {
+    rgb: color for color, rgb in BLYNCUSB_COLOR_TO_RGB.items()
+}
+
+
 def rgb_to_blyncusb_color(red: int, green: int, blue: int) -> BlyncusbColor:
     """Map an RGB color to the nearest predefined Blyncusb color.
 

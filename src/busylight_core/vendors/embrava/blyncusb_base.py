@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from .embrava_base import EmbravaBase
-from .implementation import BlyncusbColor, rgb_to_blyncusb_color
+from .implementation import BLYNCUSB_COLOR_TO_RGB, BlyncusbColor, rgb_to_blyncusb_color
 
 if TYPE_CHECKING:
     from busylight_core.hardware import Hardware
@@ -14,13 +14,12 @@ class BlyncusbBase(EmbravaBase):
 
     Provides shared behavior for BLYNCUSB10 and BLYNCUSB20 devices
     including palette-based color management and interface claiming.
-    """
 
-    def __init__(self, *args: object, **kwargs: object) -> None:
-        """."""
-        super().__init__(*args, **kwargs)
-        self._current_color: BlyncusbColor = BlyncusbColor.OFF
-        self._rgb_color: tuple[int, int, int] = (0, 0, 0)
+    These devices only support 7 predefined colors plus OFF. The color
+    setter silently maps any RGB input to the nearest palette color,
+    so the stored color always reflects what the device is actually
+    displaying.
+    """
 
     @classmethod
     def claims(cls, hardware: "Hardware") -> bool:
@@ -38,14 +37,22 @@ class BlyncusbBase(EmbravaBase):
 
     @property
     def color(self) -> tuple[int, int, int]:
-        """Tuple of RGB color values (approximated from palette color)."""
-        return self._rgb_color
+        """Tuple of RGB color values.
+
+        Returns the palette color the device is actually displaying,
+        not necessarily the exact RGB that was requested.
+        """
+        try:
+            return self._color
+        except AttributeError:
+            self._color = (0, 0, 0)
+            return self._color
 
     @color.setter
     def color(self, value: tuple[int, int, int]) -> None:
-        """Set the RGB color values (mapped to nearest palette color)."""
-        self._rgb_color = value
-        self._current_color = rgb_to_blyncusb_color(*value)
+        """Set the RGB color, snapped to the nearest palette color."""
+        blyncusb_color = rgb_to_blyncusb_color(*value)
+        self._color = BLYNCUSB_COLOR_TO_RGB[blyncusb_color]
 
     def on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the device with the specified color.
@@ -60,6 +67,5 @@ class BlyncusbBase(EmbravaBase):
 
     def reset(self) -> None:
         """Reset the device to its default state (off)."""
-        self._current_color = BlyncusbColor.OFF
-        self._rgb_color = (0, 0, 0)
+        self._color = (0, 0, 0)
         self.update()
