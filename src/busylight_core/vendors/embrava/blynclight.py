@@ -2,10 +2,10 @@
 
 from typing import ClassVar
 
-from .embrava_base import EmbravaBase
+from .blynclight_base import BlynclightBase
 
 
-class Blynclight(EmbravaBase):
+class Blynclight(BlynclightBase):
     """Embrava Blynclight USB status light for basic visual indication.
 
     The standard Blynclight provides RGB LED status indication and flashing

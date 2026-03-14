@@ -7,7 +7,7 @@ for flash speed control and other device behaviors.
 from enum import IntEnum
 
 
-class FlashSpeed(IntEnum):
+class BlynclightFlashSpeed(IntEnum):
     """Flash speed enumeration for Embrava Blynclight devices.
 
     Defines the available flash speeds for the LED indicator.

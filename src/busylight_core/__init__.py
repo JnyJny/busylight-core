@@ -39,9 +39,16 @@ from .vendors.agile_innovative import (
     BlinkStickSquare,
     BlinkStickStrip,
 )
-from .vendors.blyncusb import Blyncusb10, Blyncusb20, BlyncusbLights
 from .vendors.compulab import CompuLabLights, FitStatUSB
-from .vendors.embrava import Blynclight, BlynclightMini, BlynclightPlus, EmbravaLights
+from .vendors.embrava import (
+    Blynclight,
+    BlynclightMini,
+    BlynclightPlus,
+    Blyncusb10,
+    Blyncusb20,
+    BlyncusbLights,
+    EmbravaLights,
+)
 from .vendors.epos import Busylight, EPOSLights
 from .vendors.kuando import BusylightAlpha, BusylightOmega, KuandoLights
 from .vendors.luxafor import Bluetooth, BusyTag, Flag, LuxaforLights, Mute, Orb
