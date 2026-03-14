@@ -152,6 +152,7 @@ docs-deploy.help = "[Documentation] Deploy documentation to GitHub Pages."
 test-python-versions = ["3.11", "3.12", "3.13", "3.14"]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 fix = true
