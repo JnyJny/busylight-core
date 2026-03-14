@@ -14,7 +14,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from .blyncusb_base import BlyncusbBase
-from .implementation import RGB_TO_BLYNCUSB_COLOR, BlyncusbColor
+from .implementation import BlyncusbColor, rgb_to_blyncusb_color
 
 
 class Blyncusb10(BlyncusbBase):
@@ -41,7 +41,7 @@ class Blyncusb10(BlyncusbBase):
         Command format: 7 header bytes + 1 color byte.
         Color byte: (color_mask << 4) | 0x0F
         """
-        blyncusb_color = RGB_TO_BLYNCUSB_COLOR.get(self.color, BlyncusbColor.OFF)
+        blyncusb_color = rgb_to_blyncusb_color(*self.color)
         color_byte = (blyncusb_color.value << 4) | 0x0F
         return bytes([0x55, 0x53, 0x42, 0x43, 0x00, 0x40, 0x02, color_byte])
 

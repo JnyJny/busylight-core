@@ -18,7 +18,6 @@ from .blynclight_fields import (
 from .blynclight_state import BlynclightState
 from .blyncusb_colors import (
     BLYNCUSB_COLOR_TO_RGB,
-    RGB_TO_BLYNCUSB_COLOR,
     BlyncusbColor,
     rgb_to_blyncusb_color,
     snap_color,
@@ -32,7 +31,6 @@ State = BlynclightState
 __all__ = [
     "BLYNCUSB_COLOR_TO_RGB",
     "BLYNCUSB_TO_TENX20",
-    "RGB_TO_BLYNCUSB_COLOR",
     "BlueField",
     "BlynclightFlashSpeed",
     "BlynclightState",

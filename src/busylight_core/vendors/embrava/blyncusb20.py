@@ -20,7 +20,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from .blyncusb_base import BlyncusbBase
-from .implementation import BLYNCUSB_TO_TENX20, RGB_TO_BLYNCUSB_COLOR, BlyncusbColor, Tenx20Color
+from .implementation import BLYNCUSB_TO_TENX20, Tenx20Color, rgb_to_blyncusb_color
 
 
 class Blyncusb20(BlyncusbBase):
@@ -55,7 +55,7 @@ class Blyncusb20(BlyncusbBase):
         Returns only the color-setting command (step 2). The reset
         command (step 1) is handled by write_strategy.
         """
-        blyncusb_color = RGB_TO_BLYNCUSB_COLOR.get(self.color, BlyncusbColor.OFF)
+        blyncusb_color = rgb_to_blyncusb_color(*self.color)
         tenx20_color = BLYNCUSB_TO_TENX20.get(blyncusb_color, Tenx20Color.OFF)
         return bytes([0x00, tenx20_color] + [0x00] * 63)
 
