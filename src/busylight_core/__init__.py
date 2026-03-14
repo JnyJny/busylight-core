@@ -40,7 +40,15 @@ from .vendors.agile_innovative import (
     BlinkStickStrip,
 )
 from .vendors.compulab import CompuLabLights, FitStatUSB
-from .vendors.embrava import Blynclight, BlynclightMini, BlynclightPlus, EmbravaLights
+from .vendors.embrava import (
+    Blynclight,
+    BlynclightMini,
+    BlynclightPlus,
+    Blyncusb10,
+    Blyncusb20,
+    BlyncusbLights,
+    EmbravaLights,
+)
 from .vendors.epos import Busylight, EPOSLights
 from .vendors.kuando import BusylightAlpha, BusylightOmega, KuandoLights
 from .vendors.luxafor import Bluetooth, BusyTag, Flag, LuxaforLights, Mute, Orb
@@ -63,6 +71,9 @@ __all__ = [
     "Blynclight",
     "BlynclightMini",
     "BlynclightPlus",
+    "Blyncusb10",
+    "Blyncusb20",
+    "BlyncusbLights",
     "BusyTag",
     "Busylight",
     "BusylightAlpha",

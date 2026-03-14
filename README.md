@@ -31,7 +31,7 @@ looking for a command-line interface to control your lights? Check out
 | **Agile Innovative** | BlinkStick, BlinkStick Pro, BlinkStick Flex, BlickStick Nano, BlinkStick Strip, BlinkStick Square |
 | **CompuLab** | fit-statUSB |
 | **EPOS** | Busylight |
-| **Embrava** | Blynclight, Blynclight Mini, Blynclight Plus |
+| **Embrava** | Blynclight, Blynclight Mini, Blynclight Plus, BLYNCUSB10, BLYNCUSB20 |
 | **Kuando** | Busylight Alpha, Busylight Omega |
 | **Luxafor** | Flag, Mute, Orb, Bluetooth |
 | **MuteMe** | MuteMe, MuteMe Mini, MuteSync |

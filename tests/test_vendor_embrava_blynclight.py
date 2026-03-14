@@ -4,7 +4,12 @@ from unittest.mock import Mock, patch
 
 from busylight_core.hardware import ConnectionType, Hardware
 from busylight_core.vendors.embrava.blynclight import Blynclight
-from busylight_core.vendors.embrava.implementation import FlashSpeed, State
+from busylight_core.vendors.embrava.implementation import (
+    BlynclightFlashSpeed as FlashSpeed,
+)
+from busylight_core.vendors.embrava.implementation import (
+    BlynclightState as State,
+)
 
 
 def create_mock_blynclight_hardware() -> Mock:
@@ -403,9 +408,9 @@ class TestBlynclightStateRepr:
         result = repr(state)
 
         # Should contain class name and hex representation
-        assert "State" in result
+        assert "BlynclightState" in result
         assert "0x" in result
-        assert result.startswith("State(0x")
+        assert result.startswith("BlynclightState(0x")
         assert result.endswith(")")
 
     def test_state_str(self) -> None:

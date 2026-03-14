@@ -7,8 +7,8 @@ audio functionality.
 
 from busylight_core.word import Word
 
-from .enums import FlashSpeed
-from .fields import (
+from .blynclight_enums import BlynclightFlashSpeed
+from .blynclight_fields import (
     BlueField,
     DimBit,
     FlashBit,
@@ -24,7 +24,7 @@ from .fields import (
 )
 
 
-class State(Word):
+class BlynclightState(Word):
     """Complete device state for Embrava Blynclight commands.
 
     The State class manages the full command structure sent to Embrava devices.
@@ -69,7 +69,7 @@ class State(Word):
         self.off = True
         self.dim = False
         self.flash = False
-        self.speed = FlashSpeed.slow.value
+        self.speed = BlynclightFlashSpeed.slow.value
         self.play = False
         self.mute = False
         self.repeat = False
