@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING
 
 from .embrava_base import EmbravaBase
-from .implementation import BLYNCUSB_COLOR_TO_RGB, BlyncusbColor, rgb_to_blyncusb_color
+from .implementation import snap_color
 
 if TYPE_CHECKING:
     from busylight_core.hardware import Hardware
@@ -51,8 +51,7 @@ class BlyncusbBase(EmbravaBase):
     @color.setter
     def color(self, value: tuple[int, int, int]) -> None:
         """Set the RGB color, snapped to the nearest palette color."""
-        blyncusb_color = rgb_to_blyncusb_color(*value)
-        self._color = BLYNCUSB_COLOR_TO_RGB[blyncusb_color]
+        self._color = snap_color(*value)
 
     def on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the device with the specified color.

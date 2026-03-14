@@ -42,19 +42,20 @@ RGB_TO_BLYNCUSB_COLOR: dict[tuple[int, int, int], BlyncusbColor] = {
 }
 
 
-def rgb_to_blyncusb_color(red: int, green: int, blue: int) -> BlyncusbColor:
-    """Map an RGB color to the nearest predefined Blyncusb color.
+def snap_color(red: int, green: int, blue: int) -> tuple[int, int, int]:
+    """Map an RGB color to the nearest predefined Blyncusb palette color.
 
-    Since these devices only support 7 colors plus OFF,
-    this finds the best match based on which channels are dominant.
+    Since these devices only support 7 colors plus OFF, this finds
+    the best match based on which channels are dominant and returns
+    the canonical RGB for that palette entry.
 
     :param red: Red component (0-255)
     :param green: Green component (0-255)
     :param blue: Blue component (0-255)
-    :return: The closest BlyncusbColor match
+    :return: The canonical RGB tuple for the nearest palette color
     """
     if red < 32 and green < 32 and blue < 32:
-        return BlyncusbColor.OFF
+        return (0, 0, 0)
 
     max_val = max(red, green, blue)
     threshold = max_val * 0.5
@@ -63,14 +64,28 @@ def rgb_to_blyncusb_color(red: int, green: int, blue: int) -> BlyncusbColor:
     g_on = green >= threshold
     b_on = blue >= threshold
 
-    color_map: dict[tuple[bool, bool, bool], BlyncusbColor] = {
-        (True, True, True): BlyncusbColor.WHITE,
-        (True, True, False): BlyncusbColor.YELLOW,
-        (True, False, True): BlyncusbColor.MAGENTA,
-        (False, True, True): BlyncusbColor.CYAN,
-        (True, False, False): BlyncusbColor.RED,
-        (False, True, False): BlyncusbColor.GREEN,
-        (False, False, True): BlyncusbColor.BLUE,
+    color_map: dict[tuple[bool, bool, bool], tuple[int, int, int]] = {
+        (True, True, True): (255, 255, 255),
+        (True, True, False): (255, 255, 0),
+        (True, False, True): (255, 0, 255),
+        (False, True, True): (0, 255, 255),
+        (True, False, False): (255, 0, 0),
+        (False, True, False): (0, 255, 0),
+        (False, False, True): (0, 0, 255),
     }
 
-    return color_map.get((r_on, g_on, b_on), BlyncusbColor.OFF)
+    return color_map.get((r_on, g_on, b_on), (0, 0, 0))
+
+
+def rgb_to_blyncusb_color(red: int, green: int, blue: int) -> BlyncusbColor:
+    """Map an RGB color to the nearest predefined BlyncusbColor enum.
+
+    Convenience wrapper around snap_color for protocol code that
+    needs the enum value directly.
+
+    :param red: Red component (0-255)
+    :param green: Green component (0-255)
+    :param blue: Blue component (0-255)
+    :return: The closest BlyncusbColor match
+    """
+    return RGB_TO_BLYNCUSB_COLOR.get(snap_color(red, green, blue), BlyncusbColor.OFF)

@@ -21,6 +21,7 @@ from .blyncusb_colors import (
     RGB_TO_BLYNCUSB_COLOR,
     BlyncusbColor,
     rgb_to_blyncusb_color,
+    snap_color,
 )
 from .blyncusb_enums import BLYNCUSB_TO_TENX20, Tenx20Color
 
@@ -51,4 +52,5 @@ __all__ = [
     "Tenx20Color",
     "VolumeField",
     "rgb_to_blyncusb_color",
+    "snap_color",
 ]
