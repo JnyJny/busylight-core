@@ -198,7 +198,13 @@ cython_debug/
 
 .claude/
 
+# Scratch files
+foo.py
+bar.py
+baz.py
+ack.py
 tst.py
+chase.py
 plan.md
 
 scripts/
