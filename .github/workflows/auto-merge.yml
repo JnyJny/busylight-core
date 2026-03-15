@@ -15,4 +15,4 @@ jobs:
       - name: Enable auto-merge
         run: gh pr merge ${{ github.event.issue.number }} --repo ${{ github.repository }} --squash --auto
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
