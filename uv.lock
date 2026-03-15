@@ -27,7 +27,7 @@ wheels = [
 
 [[package]]
 name = "busylight-core"
-version = "0.15.4"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "hidapi" },
