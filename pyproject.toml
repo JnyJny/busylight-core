@@ -21,7 +21,10 @@ classifiers = [
   "Topic :: Utilities",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 
 [project.urls]
@@ -35,6 +38,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "git-cliff>=2.0.0",
     "poethepoet",
     "pytest",
     "pytest-asyncio",
@@ -118,11 +122,11 @@ publish.help = "[Publish] Patch release."
 
 # Release tasks
 
-changelog.shell = "git log --pretty=format:'- %s (%h)' $(git describe --tags --abbrev=0 2>/dev/null || echo 'HEAD')..HEAD"
-changelog.help = "[Release] Generate changelog since last tag."
+changelog.cmd = "git cliff"
+changelog.help = "[Release] Generate full changelog to stdout."
 
-release-notes.shell = "echo '## Release Notes' > RELEASE_NOTES.md && echo '' >> RELEASE_NOTES.md && poe changelog >> RELEASE_NOTES.md"
-release-notes.help = "[Release] Generate release notes file."
+release-notes.cmd = "git cliff --latest --strip header"
+release-notes.help = "[Release] Generate release notes for the latest tag."
 
 # Clean
 
