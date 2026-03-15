@@ -23,7 +23,7 @@ from __future__ import annotations
 import abc
 import contextlib
 import platform
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Self
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator
@@ -150,7 +150,7 @@ class Light(abc.ABC, TaskableMixin):
 
     @classmethod
     @cache
-    def subclasses(cls) -> list[type[Light]]:
+    def subclasses(cls) -> list[type[Self]]:
         """Return a list of all subclasses of this class."""
         subclasses = []
 
@@ -178,7 +178,7 @@ class Light(abc.ABC, TaskableMixin):
         return supported_lights
 
     @classmethod
-    def available_hardware(cls) -> dict[type[Light], list[Hardware]]:
+    def available_hardware(cls) -> dict[type[Self], list[Hardware]]:
         """Discover all compatible hardware devices available for control.
 
         Scans the system for USB devices that match known vendor/product ID
@@ -192,7 +192,7 @@ class Light(abc.ABC, TaskableMixin):
 
         :return: Mapping from Light subclass to list of compatible Hardware instances
         """
-        available_lights: dict[type[Light], list[Hardware]] = {}
+        available_lights: dict[type[Self], list[Hardware]] = {}
 
         for hardware in Hardware.enumerate():
             if cls.supported_device_ids:
@@ -215,8 +215,8 @@ class Light(abc.ABC, TaskableMixin):
         *,
         reset: bool = True,
         exclusive: bool = True,
-        predicate: callable[[Hardware], bool] | None = None,
-    ) -> list[Light]:
+        predicate: Callable[[Hardware], bool] | None = None,
+    ) -> list[Self]:
         """Create initialized Light instances for all available compatible devices.
 
         Discovers all compatible hardware and returns Light instances ready for
@@ -231,7 +231,7 @@ class Light(abc.ABC, TaskableMixin):
         :param predicate: Optional callable to filter devices based on custom criteria
         :return: List of initialized Light instances, empty if none found
         """
-        lights: list[Light] = []
+        lights: list[Self] = []
 
         for subclass, devices in cls.available_hardware().items():
             for device in devices:
@@ -251,8 +251,8 @@ class Light(abc.ABC, TaskableMixin):
         *,
         reset: bool = True,
         exclusive: bool = True,
-        predicate: callable[[Hardware], bool] | None = None,
-    ) -> Light:
+        predicate: Callable[[Hardware], bool] | None = None,
+    ) -> Self:
         """Create the first available Light instance ready for immediate use.
 
         Discovers compatible devices and returns the first successfully
@@ -280,7 +280,7 @@ class Light(abc.ABC, TaskableMixin):
         raise NoLightsFoundError(cls)
 
     @classmethod
-    def at_path(cls, path: str, reset: bool = True, exclusive: bool = True) -> Light:
+    def at_path(cls, path: str, reset: bool = True, exclusive: bool = True) -> Self:
         """Create a Light instance for the device at the specified path.
 
         :param path: Filesystem path to the target hardware device
