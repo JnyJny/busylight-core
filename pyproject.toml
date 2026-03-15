@@ -91,6 +91,18 @@ qc.help = "[Code Quality] Run all code quality tasks."
 
 ## update version in pyproject
 
+_preflight.shell = """
+if [ "$(git branch --show-current)" != "main" ]; then
+  echo "ERROR: publish must run from main branch" >&2
+  exit 1
+fi
+if [ -n "$(git status --porcelain)" ]; then
+  echo "ERROR: working tree is dirty" >&2
+  exit 1
+fi
+"""
+_preflight.help = "Verify on main branch with clean working tree."
+
 _patch_bump = "uv version --bump patch"
 _minor_bump = "uv version --bump minor"
 _major_bump = "uv version --bump major"
@@ -108,13 +120,13 @@ _update_pyproject = ["_add", "_commit", "_tag", "_push_tags", "_push"]
 ## Publish patch, minor or major releases
 ## See .github/workflows/release.yaml
 
-publish_patch.sequence = ["_patch_bump", "_update_pyproject"]
+publish_patch.sequence = ["_preflight", "_patch_bump", "_update_pyproject"]
 publish_patch.help = "[Publish] Patch release."
 
-publish_minor.sequence = ["_minor_bump", "_update_pyproject"]
+publish_minor.sequence = ["_preflight", "_minor_bump", "_update_pyproject"]
 publish_minor.help = "[Publish] Minor release."
 
-publish_major.sequence = ["_major_bump", "_update_pyproject"]
+publish_major.sequence = ["_preflight", "_major_bump", "_update_pyproject"]
 publish_major.help = "[Publish] Major release."
 
 publish.ref =  "publish_patch"
