@@ -138,14 +138,17 @@ jobs:
           name: dist-files
           path: dist/
 
-      - name: Install git-cliff
-        run: pip install git-cliff
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Generate release notes for this tag
-        run: git cliff --latest --strip header > release_notes.md
+        run: uv run git cliff --latest --strip header > release_notes.md
 
       - name: Update CHANGELOG.md
-        run: git cliff --output CHANGELOG.md
+        run: uv run git cliff --output CHANGELOG.md
 
       - name: Commit updated CHANGELOG.md
         run: |
