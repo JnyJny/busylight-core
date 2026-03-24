@@ -41,7 +41,7 @@ class Blink1(ThingMBase):
     def __bytes__(self) -> bytes:
         return bytes(self.state)
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the Blink(1) with the specified color.
 
         :param color: RGB color tuple (red, green, blue) with values 0-255

@@ -533,7 +533,6 @@ class Light(abc.ABC, TaskableMixin):
         yield
         self.update()
 
-    @abc.abstractmethod
     def on(
         self,
         color: tuple[int, int, int],
@@ -541,13 +540,25 @@ class Light(abc.ABC, TaskableMixin):
     ) -> None:
         """Activate the light with the specified RGB color.
 
-        Sets the light to display the given color immediately. This is the
-        primary method for controlling light appearance and should be
-        implemented by all device-specific subclasses.
+        Cancels any pre-existing animation tasks before setting the color,
+        then dispatches to the vendor-specific _on() implementation.
 
-        For devices with multiple LEDs, use led parameter to target specific
-        LEDs or set to 0 to affect all LEDs simultaneously. Single-LED devices
-        should ignore the led parameter.
+        :param color: RGB intensity values from 0-255 for each color component
+        :param led: Target LED index, 0 affects all LEDs on the device
+        """
+        self.cancel_tasks()
+        self._on(color, led)
+
+    @abc.abstractmethod
+    def _on(
+        self,
+        color: tuple[int, int, int],
+        led: int = 0,
+    ) -> None:
+        """Vendor implementation of light activation.
+
+        Subclasses implement this to set the hardware to the given color.
+        Task cancellation is handled by on() before this method is called.
 
         :param color: RGB intensity values from 0-255 for each color component
         :param led: Target LED index, 0 affects all LEDs on the device
@@ -571,7 +582,6 @@ class Light(abc.ABC, TaskableMixin):
     def reset(self) -> None:
         """Turn the light off and cancel associated asynchronous tasks."""
         self.off()
-        self.cancel_tasks()
 
     @abc.abstractmethod
     def __bytes__(self) -> bytes:

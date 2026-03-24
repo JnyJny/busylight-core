@@ -21,7 +21,7 @@ class MockLightSubclass(ColorableMixin, Light):
     def __bytes__(self) -> bytes:
         return b"\x01\x02\x03\x04"
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn the light on with the specified color (mock)."""
 
 

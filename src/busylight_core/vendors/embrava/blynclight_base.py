@@ -37,7 +37,7 @@ class BlynclightBase(EmbravaBase):
         """Set the RGB color values."""
         self.state.red, self.state.green, self.state.blue = value
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the device with the specified color.
 
         :param color: RGB color tuple (red, green, blue)

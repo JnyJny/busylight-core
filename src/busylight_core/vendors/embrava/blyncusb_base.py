@@ -53,7 +53,7 @@ class BlyncusbBase(EmbravaBase):
         """Set the RGB color, snapped to the nearest palette color."""
         self._color = snap_color(*value)
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the device with the specified color.
 
         The RGB color will be mapped to the nearest available palette color.

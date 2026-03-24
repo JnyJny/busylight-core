@@ -23,7 +23,7 @@ class FitStatUSB(ColorableMixin, CompuLabBase):
 
         return buf.encode()
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the fit-statUSB with the specified color.
 
         :param color: RGB tuple (red, green, blue).
