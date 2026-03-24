@@ -41,7 +41,7 @@ class BusyTag(ColorableMixin, LuxaforBase):
         """The number of individually addressable LEDs."""
         return 7
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the BusyTag with the specified color.
 
         :param color: RGB color tuple (red, green, blue)

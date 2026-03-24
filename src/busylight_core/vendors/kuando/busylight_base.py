@@ -34,7 +34,7 @@ class BusylightBase(ColorableMixin, KuandoBase):
     def __bytes__(self) -> bytes:
         return bytes(self.state)
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the Busylight with the specified color.
 
         Automatically starts keepalive using the best available strategy
@@ -50,15 +50,16 @@ class BusylightBase(ColorableMixin, KuandoBase):
         self.add_task("keepalive", self.keepalive, interval=self.REFRESH_INTERVAL)
 
     def off(self, led: int = 0) -> None:
-        """Turn off the Busylight and cancel keepalive task.
+        """Turn off the Busylight and cancel keepalive.
+
+        Overrides the base off() to avoid restarting keepalive via _on().
 
         :param led: LED index (unused for Busylight devices)
         """
+        self.cancel_tasks()
         self.color = (0, 0, 0)
         with self.batch_update():
             self.state.steps[0].jump(self.color)
-
-        self.cancel_task("keepalive")
 
     def keepalive(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         """Send a keepalive command to the Busylight."""

@@ -39,7 +39,7 @@ class Flag(LuxaforBase):
     def __bytes__(self) -> bytes:
         return bytes(self.state)
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on a Luxafor device with the specified color tuple.
 
         :param color: RGB color tuple (red, green, blue)

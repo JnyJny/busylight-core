@@ -31,7 +31,7 @@ class Busylight(EPOSBase):
         """The number of individually addressable LEDs."""
         return self.state.nleds
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Turn on the EPOS Busylight with the specified color.
 
         :param color: RGB color tuple (red, green, blue) with values 0-255

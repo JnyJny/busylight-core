@@ -249,7 +249,7 @@ class TestKuandoBusylightBase:
 
         with (
             patch.object(busylight, "batch_update") as mock_batch,
-            patch.object(busylight, "cancel_task") as mock_cancel_task,
+            patch.object(busylight, "cancel_tasks") as mock_cancel_tasks,
         ):
             mock_batch.return_value.__enter__ = Mock()
             mock_batch.return_value.__exit__ = Mock()
@@ -260,7 +260,7 @@ class TestKuandoBusylightBase:
             assert busylight.state.steps[0].color == (0, 0, 0)
             assert busylight.state.steps[0].opcode == OpCode.Jump
             mock_batch.assert_called_once()
-            mock_cancel_task.assert_called_once_with("keepalive")
+            mock_cancel_tasks.assert_called_once()
 
     def test_on_method_with_led_parameter(self, busylight) -> None:
         """Test on() method with led parameter (should be ignored)."""
@@ -287,7 +287,7 @@ class TestKuandoBusylightBase:
         """Test off() method with led parameter (should be ignored)."""
         with (
             patch.object(busylight, "batch_update") as mock_batch,
-            patch.object(busylight, "cancel_task") as mock_cancel_task,
+            patch.object(busylight, "cancel_tasks") as mock_cancel_tasks,
         ):
             mock_batch.return_value.__enter__ = Mock()
             mock_batch.return_value.__exit__ = Mock()
@@ -296,7 +296,7 @@ class TestKuandoBusylightBase:
 
             assert busylight.color == (0, 0, 0)
             mock_batch.assert_called_once()
-            mock_cancel_task.assert_called_once_with("keepalive")
+            mock_cancel_tasks.assert_called_once()
 
     def test_vendor_hierarchy(self, busylight) -> None:
         """Test BusylightBase inherits from KuandoBase properly."""

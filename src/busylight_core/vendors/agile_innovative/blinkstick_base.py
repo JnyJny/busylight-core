@@ -48,7 +48,7 @@ class BlinkStickBase(AgileInnovativeBase):
         """Return the byte representation of the BlinkStick state."""
         return bytes(self.state)
 
-    def on(self, color: tuple[int, int, int], led: int = 0) -> None:
+    def _on(self, color: tuple[int, int, int], led: int = 0) -> None:
         """Activate the light with the given red, green, blue color tuple.
 
         :param color: RGB color tuple (red, green, blue) with values 0-255
