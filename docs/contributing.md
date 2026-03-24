@@ -12,7 +12,7 @@ contributors.
 ### Prerequisites
 
 - Python 3.11+ 
-- [uv][astra-uv] for dependency management
+- [uv][astral-uv] for dependency management
 - Git for version control
 - Optional: [direnv][direnv] for automatic environment activation
 
