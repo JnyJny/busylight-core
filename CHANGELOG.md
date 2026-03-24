@@ -2,10 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [2.1.0](https://github.com/JnyJny/busylight-core/releases/tag/v2.1.0) - 2026-03-24
 
 ### Bug Fixes
 
+- cancel pre-existing tasks in Light.on() via Template Method (#59) ([06d7cd2](https://github.com/JnyJny/busylight-core/commit/06d7cd205b8a1c9a1ed0cbfd9c648d710a51424d))
+- use uv sync for git-cliff in release workflow ([7350ca0](https://github.com/JnyJny/busylight-core/commit/7350ca0d7c13e36bd1aa82a7c052960e42815179))
 - use GH_PAT for release changelog push ([af63027](https://github.com/JnyJny/busylight-core/commit/af63027b4f4ebb49e35d90ce509997e10ffde158))
 ## [2.0.1](https://github.com/JnyJny/busylight-core/releases/tag/v2.0.1) - 2026-03-15
 
@@ -20,12 +22,12 @@ All notable changes to this project will be documented in this file.
 
 ### Refactor
 
-- modernize type annotations with Self and Callable (#57) ([#57](https://github.com/JnyJny/busylight-core/pull/57)) ([2df1ff6](https://github.com/JnyJny/busylight-core/commit/2df1ff67277ffdbd45b9b490ad39298f4c01fd90))
+- modernize type annotations with Self and Callable (#57) ([2df1ff6](https://github.com/JnyJny/busylight-core/commit/2df1ff67277ffdbd45b9b490ad39298f4c01fd90))
 ## [1.0.1](https://github.com/JnyJny/busylight-core/releases/tag/v1.0.1) - 2026-03-15
 
 ### Features
 
-- replace changelog generation with git-cliff (#55) ([#55](https://github.com/JnyJny/busylight-core/pull/55)) ([8c7635c](https://github.com/JnyJny/busylight-core/commit/8c7635c7c9af40c88fc5a93e27f56c67e2953f0d))
+- replace changelog generation with git-cliff (#55) ([8c7635c](https://github.com/JnyJny/busylight-core/commit/8c7635c7c9af40c88fc5a93e27f56c67e2953f0d))
 ## [0.15.4](https://github.com/JnyJny/busylight-core/releases/tag/v0.15.4) - 2026-03-14
 
 ### Bug Fixes
@@ -44,7 +46,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- add support for early Blynclight models (VID 0x1130) (#52) ([#52](https://github.com/JnyJny/busylight-core/pull/52)) ([498a80b](https://github.com/JnyJny/busylight-core/commit/498a80b48d0ee67af4b3deaa421557d511f29c4a))
+- add support for early Blynclight models (VID 0x1130) (#52) ([498a80b](https://github.com/JnyJny/busylight-core/commit/498a80b48d0ee67af4b3deaa421557d511f29c4a))
 - add poe doc-test task, update all references ([4f74ff3](https://github.com/JnyJny/busylight-core/commit/4f74ff30483a85c204d7ea8f4a1cce3ca603dab5))
 - add executable doc tests with pytest-markdown-docs (#44) ([f0d553e](https://github.com/JnyJny/busylight-core/commit/f0d553ecee2baf6a58afcf6a34995c507f930c17))
 
