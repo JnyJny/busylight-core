@@ -6,7 +6,7 @@ readme = "README.md"
 license = "Apache-2.0"
 authors = [{name = "JnyJny", email = "erik.oshaughnessy@gmail.com"}]
 repository = "https://github.com/JnyJny/busylight_core"
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.12,<4.0"
 dependencies = [
     "loguru",
     "pyserial>=3.5",
@@ -21,7 +21,6 @@ classifiers = [
   "Topic :: Utilities",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
@@ -165,7 +164,7 @@ docs-deploy.help = "[Documentation] Deploy documentation to GitHub Pages."
 # Tool Options
 
 [tool.busylight_core.ci]
-test-python-versions = ["3.11", "3.12", "3.13", "3.14"]
+test-python-versions = ["3.12", "3.13", "3.14"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
