@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0](https://github.com/JnyJny/busylight-core/releases/tag/v2.2.0) - 2026-03-25
+
+### Bug Fixes
+
+- Dropped base python version from 3.12 to 3.11 ([29ccd98](https://github.com/JnyJny/busylight-core/commit/29ccd9851fcac91bca116d0d9e59c08341c1c66c))
 ## [2.1.1](https://github.com/JnyJny/busylight-core/releases/tag/v2.1.1) - 2026-03-25
 
 ### Bug Fixes
