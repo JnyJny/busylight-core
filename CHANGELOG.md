@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.1](https://github.com/JnyJny/busylight-core/releases/tag/v2.1.1) - 2026-03-25
+
+### Bug Fixes
+
+- Add interrupt parameter to light on method ([92a985d](https://github.com/JnyJny/busylight-core/commit/92a985dd1d478ec0840b385639e7d565bc0d6e07))
+
+### Documentation
+
+- fix dangling cross-reference in contributing.md ([87bac4a](https://github.com/JnyJny/busylight-core/commit/87bac4a9530b2b554652f1794dbe90713c7e0032))
+
+### Other
+
+- Updated uv.lock with latest dependencies. ([d75a029](https://github.com/JnyJny/busylight-core/commit/d75a029fa33d30712e74f8ed42c3dcf1590e6f70))
 ## [2.1.0](https://github.com/JnyJny/busylight-core/releases/tag/v2.1.0) - 2026-03-24
 
 ### Bug Fixes
