@@ -537,6 +537,7 @@ class Light(abc.ABC, TaskableMixin):
         self,
         color: tuple[int, int, int],
         led: int = 0,
+        interrupt: bool = True,
     ) -> None:
         """Activate the light with the specified RGB color.
 
@@ -545,8 +546,10 @@ class Light(abc.ABC, TaskableMixin):
 
         :param color: RGB intensity values from 0-255 for each color component
         :param led: Target LED index, 0 affects all LEDs on the device
+        :param interrupt: If True, cancel any existing tasks before activating the light
         """
-        self.cancel_tasks()
+        if interrupt:
+            self.cancel_tasks()
         self._on(color, led)
 
     @abc.abstractmethod
